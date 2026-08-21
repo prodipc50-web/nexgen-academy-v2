@@ -22,10 +22,18 @@ export interface UserProfile {
 export interface AcademySettings {
   instituteName: string;
   tagline: string;
+  campusName?: string; // default 'Farmgate Campus'
+  primarySupportPhone?: string; // default '01798444444'
   officialAddress: string;
   officialEmail: string;
   helplines: string[];
   websiteUrl: string;
+  certificateVerificationBaseUrl?: string; // default 'https://nexgenacademy.edu.bd/verify/'
+  idCardSignatoryName?: string; // default 'Prodip Chowdhury'
+  idCardSignatoryTitle?: string; // default 'Authorized Signatory'
+  admitCardControllerName?: string; // default 'Exam Controller'
+  idCardTerms?: string;
+  admitCardInstructions?: string;
   logoIconSize: number; // default 48
   logoFontSize: number; // default 16
   taglineFontSize: number; // default 11

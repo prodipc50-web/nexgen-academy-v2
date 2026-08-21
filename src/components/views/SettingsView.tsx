@@ -81,10 +81,18 @@ export const SettingsView: React.FC = () => {
   const [profileForm, setProfileForm] = useState({
     instituteName: academySettings.instituteName || 'Nexgen Computer Academy',
     tagline: academySettings.tagline || 'Institute of Information Technology & Professional Skills',
+    campusName: academySettings.campusName || 'Farmgate Campus',
+    primarySupportPhone: academySettings.primarySupportPhone || '01798444444',
     officialAddress: academySettings.officialAddress || '14/B Garden Road, Farmgate, Dhaka-1215',
     officialEmail: academySettings.officialEmail || 'info@nexgenacademy.edu.bd',
-    helplines: academySettings.helplines || ['+880 1711-223344', '+880 1811-556677', '+880 1911-889900'],
+    helplines: academySettings.helplines || ['01798444444', '+880 1711-223344', '+880 1811-556677'],
     websiteUrl: academySettings.websiteUrl || 'https://nexgenacademy.edu.bd',
+    certificateVerificationBaseUrl: academySettings.certificateVerificationBaseUrl || 'https://nexgenacademy.edu.bd/verify/',
+    idCardSignatoryName: academySettings.idCardSignatoryName || 'Prodip Chowdhury',
+    idCardSignatoryTitle: academySettings.idCardSignatoryTitle || 'Authorized Signatory',
+    admitCardControllerName: academySettings.admitCardControllerName || 'Controller of Examinations',
+    idCardTerms: academySettings.idCardTerms || '• This card is non-transferable and official property of Nexgen Computer Academy.\n• If found, please return to Farmgate Campus, 14/B Garden Road, Dhaka-1215 or call helpline.',
+    admitCardInstructions: academySettings.admitCardInstructions || '1. Candidates must arrive at the examination hall at least 15 minutes before scheduled start time.\n2. Bring this official Admit Card and Nexgen Student ID Card for verification.\n3. Practical project submission and viva presentation will follow the written test.',
     logoIconSize: academySettings.logoIconSize || 48,
     logoFontSize: academySettings.logoFontSize || 16,
     taglineFontSize: academySettings.taglineFontSize || 11
@@ -96,10 +104,18 @@ export const SettingsView: React.FC = () => {
     setProfileForm({
       instituteName: academySettings.instituteName || 'Nexgen Computer Academy',
       tagline: academySettings.tagline || 'Institute of Information Technology & Professional Skills',
+      campusName: academySettings.campusName || 'Farmgate Campus',
+      primarySupportPhone: academySettings.primarySupportPhone || '01798444444',
       officialAddress: academySettings.officialAddress || '14/B Garden Road, Farmgate, Dhaka-1215',
       officialEmail: academySettings.officialEmail || 'info@nexgenacademy.edu.bd',
-      helplines: academySettings.helplines || ['+880 1711-223344', '+880 1811-556677', '+880 1911-889900'],
+      helplines: academySettings.helplines || ['01798444444', '+880 1711-223344', '+880 1811-556677'],
       websiteUrl: academySettings.websiteUrl || 'https://nexgenacademy.edu.bd',
+      certificateVerificationBaseUrl: academySettings.certificateVerificationBaseUrl || 'https://nexgenacademy.edu.bd/verify/',
+      idCardSignatoryName: academySettings.idCardSignatoryName || 'Prodip Chowdhury',
+      idCardSignatoryTitle: academySettings.idCardSignatoryTitle || 'Authorized Signatory',
+      admitCardControllerName: academySettings.admitCardControllerName || 'Controller of Examinations',
+      idCardTerms: academySettings.idCardTerms || '• This card is non-transferable and official property of Nexgen Computer Academy.\n• If found, please return to Farmgate Campus, 14/B Garden Road, Dhaka-1215 or call helpline.',
+      admitCardInstructions: academySettings.admitCardInstructions || '1. Candidates must arrive at the examination hall at least 15 minutes before scheduled start time.\n2. Bring this official Admit Card and Nexgen Student ID Card for verification.\n3. Practical project submission and viva presentation will follow the written test.',
       logoIconSize: academySettings.logoIconSize || 48,
       logoFontSize: academySettings.logoFontSize || 16,
       taglineFontSize: academySettings.taglineFontSize || 11
@@ -847,6 +863,39 @@ export const SettingsView: React.FC = () => {
               </div>
             </div>
 
+            {/* Campus & Primary Helpline */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100">
+              <div>
+                <label className="block text-indigo-950 font-bold mb-1 flex items-center space-x-1.5">
+                  <Building className="w-4 h-4 text-indigo-600" />
+                  <span>Main Campus / Branch Name (মূল ক্যাম্পাস)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Farmgate Campus"
+                  value={profileForm.campusName}
+                  onChange={e => setProfileForm({ ...profileForm, campusName: e.target.value })}
+                  className="w-full bg-white border border-indigo-200 rounded-xl px-3.5 py-2.5 text-slate-900 font-bold outline-none focus:border-indigo-500"
+                />
+                <p className="text-[11px] text-indigo-700 mt-1">Shown on ID Cards, Admit Cards and Official Receipts</p>
+              </div>
+
+              <div>
+                <label className="block text-indigo-950 font-bold mb-1 flex items-center space-x-1.5">
+                  <Phone className="w-4 h-4 text-indigo-600" />
+                  <span>Primary Support Phone / Print Phone (প্রিন্ট সাপোর্ট নম্বর)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 01798444444"
+                  value={profileForm.primarySupportPhone}
+                  onChange={e => setProfileForm({ ...profileForm, primarySupportPhone: e.target.value })}
+                  className="w-full bg-white border border-indigo-200 rounded-xl px-3.5 py-2.5 text-slate-900 font-bold font-mono outline-none focus:border-indigo-500"
+                />
+                <p className="text-[11px] text-indigo-700 mt-1">Default number printed on ID card back & admit card header</p>
+              </div>
+            </div>
+
             <div>
               <label className="block text-slate-700 font-bold mb-1 flex items-center space-x-1.5">
                 <MapPin className="w-4 h-4 text-slate-500" />
@@ -885,6 +934,24 @@ export const SettingsView: React.FC = () => {
               </div>
             </div>
 
+            {/* Certificate Verification URL Base Configuration */}
+            <div className="bg-emerald-50/60 p-4 rounded-2xl border border-emerald-200">
+              <label className="block text-emerald-950 font-bold mb-1 flex items-center space-x-1.5 text-sm">
+                <Shield className="w-4 h-4 text-emerald-600" />
+                <span>Certificate Online Verification Base URL (অনলাইন ভেরিফিকেশন লিংক)</span>
+              </label>
+              <input
+                type="text"
+                placeholder="https://nexgenacademy.edu.bd/verify/"
+                value={profileForm.certificateVerificationBaseUrl}
+                onChange={e => setProfileForm({ ...profileForm, certificateVerificationBaseUrl: e.target.value })}
+                className="w-full bg-white border border-emerald-300 rounded-xl px-3.5 py-2.5 text-slate-900 font-mono text-xs outline-none focus:border-emerald-500"
+              />
+              <p className="text-[11px] text-emerald-800 mt-1.5">
+                Certificates will display: <span className="font-mono font-bold">{profileForm.certificateVerificationBaseUrl || 'https://nexgenacademy.edu.bd/verify/'}NCA-CERT-2026-5172</span> (Can also be manually edited in Certificate modal anytime)
+              </p>
+            </div>
+
             {/* Multiple Helpline Numbers Management */}
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
               <div className="flex items-center justify-between">
@@ -906,7 +973,7 @@ export const SettingsView: React.FC = () => {
                       type="text"
                       value={helpline}
                       onChange={e => handleUpdateHelpline(idx, e.target.value)}
-                      placeholder="e.g. +880 1711-000000"
+                      placeholder="e.g. 01798444444"
                       className="flex-1 bg-transparent text-slate-900 font-semibold text-xs outline-none"
                     />
                     <button
@@ -925,7 +992,7 @@ export const SettingsView: React.FC = () => {
               <div className="flex items-center space-x-2 pt-1">
                 <input
                   type="text"
-                  placeholder="Enter new helpline number (e.g. +880 1799-887766)..."
+                  placeholder="Enter new helpline number (e.g. 01798444444)..."
                   value={newHelplineInput}
                   onChange={e => setNewHelplineInput(e.target.value)}
                   onKeyDown={e => {
@@ -944,6 +1011,61 @@ export const SettingsView: React.FC = () => {
                   <PlusCircle className="w-4 h-4" />
                   <span>Add Helpline (যোগ করুন)</span>
                 </button>
+              </div>
+            </div>
+
+            {/* Print Signatory & Policy Defaults */}
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-4">
+              <h4 className="font-bold text-slate-900 text-sm">ID Card & Admit Card Print Defaults</h4>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-slate-600 text-xs font-semibold mb-1">ID Card Signatory Name</label>
+                  <input
+                    type="text"
+                    value={profileForm.idCardSignatoryName}
+                    onChange={e => setProfileForm({ ...profileForm, idCardSignatoryName: e.target.value })}
+                    className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-900 text-xs font-bold outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-600 text-xs font-semibold mb-1">Signatory Title</label>
+                  <input
+                    type="text"
+                    value={profileForm.idCardSignatoryTitle}
+                    onChange={e => setProfileForm({ ...profileForm, idCardSignatoryTitle: e.target.value })}
+                    className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-900 text-xs outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-600 text-xs font-semibold mb-1">Admit Card Exam Controller</label>
+                  <input
+                    type="text"
+                    value={profileForm.admitCardControllerName}
+                    onChange={e => setProfileForm({ ...profileForm, admitCardControllerName: e.target.value })}
+                    className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-900 text-xs font-bold outline-none focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-600 text-xs font-semibold mb-1">ID Card Back Return Policy / Notice</label>
+                <textarea
+                  rows={2}
+                  value={profileForm.idCardTerms}
+                  onChange={e => setProfileForm({ ...profileForm, idCardTerms: e.target.value })}
+                  className="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-slate-900 text-xs outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-600 text-xs font-semibold mb-1">Admit Card Exam Hall Instructions</label>
+                <textarea
+                  rows={2}
+                  value={profileForm.admitCardInstructions}
+                  onChange={e => setProfileForm({ ...profileForm, admitCardInstructions: e.target.value })}
+                  className="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-slate-900 text-xs outline-none focus:border-indigo-500"
+                />
               </div>
             </div>
 

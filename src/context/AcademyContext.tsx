@@ -665,7 +665,18 @@ export const AcademyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const saved = localStorage.getItem(`${STORAGE_KEY}_academy_settings`);
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        return {
+          idCardSignatoryName: 'Prodip Chowdhury',
+          idCardSignatoryTitle: 'Authorized Signatory',
+          admitCardControllerName: 'Controller of Examinations',
+          idCardTerms: '• This card is non-transferable and official property of Nexgen Computer Academy.\n• If found, please return to Farmgate Campus, 14/B Garden Road, Dhaka-1215 or call helpline.',
+          admitCardInstructions: '1. Candidates must arrive at the examination hall at least 15 minutes before scheduled start time.\n2. Bring this official Admit Card and Nexgen Student ID Card for verification.\n3. Practical project submission and viva presentation will follow the written test.',
+          certificateVerificationBaseUrl: 'https://nexgenacademy.edu.bd/verify/',
+          ...parsed,
+          campusName: parsed.campusName || 'Farmgate Campus',
+          primarySupportPhone: parsed.primarySupportPhone || '01798444444'
+        };
       } catch (e) {
         console.error('Error parsing academy settings', e);
       }
@@ -673,10 +684,18 @@ export const AcademyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return {
       instituteName: 'Nexgen Computer Academy',
       tagline: 'Institute of Information Technology & Professional Skills',
+      campusName: 'Farmgate Campus',
+      primarySupportPhone: '01798444444',
       officialAddress: '14/B Garden Road, Farmgate, Dhaka-1215',
       officialEmail: 'info@nexgenacademy.edu.bd',
-      helplines: ['+880 1711-223344', '+880 1811-556677', '+880 1911-889900'],
+      helplines: ['01798444444', '+880 1711-223344', '+880 1811-556677'],
       websiteUrl: 'https://nexgenacademy.edu.bd',
+      certificateVerificationBaseUrl: 'https://nexgenacademy.edu.bd/verify/',
+      idCardSignatoryName: 'Prodip Chowdhury',
+      idCardSignatoryTitle: 'Authorized Signatory',
+      admitCardControllerName: 'Controller of Examinations',
+      idCardTerms: '• This card is non-transferable and official property of Nexgen Computer Academy.\n• If found, please return to Farmgate Campus, 14/B Garden Road, Dhaka-1215 or call helpline.',
+      admitCardInstructions: '1. Candidates must arrive at the examination hall at least 15 minutes before scheduled start time.\n2. Bring this official Admit Card and Nexgen Student ID Card for verification.\n3. Practical project submission and viva presentation will follow the written test.',
       logoIconSize: 48,
       logoFontSize: 16,
       taglineFontSize: 11

@@ -87,7 +87,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
   onClose,
   certificateId
 }) => {
-  const { certificates, students, courses, batches, updateCertificate } = useAcademy();
+  const { certificates, students, courses, batches, updateCertificate, academySettings } = useAcademy();
 
   const [activeTab, setActiveTab] = useState<'preview' | 'customize' | 'styles'>('preview');
   const [isSavedToast, setIsSavedToast] = useState(false);
@@ -104,8 +104,8 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
 
   // Editable Certificate Fields
   const [certData, setCertData] = useState({
-    instituteName: 'Nexgen Computer Academy',
-    instituteTagline: 'Institute of Information Technology & Professional Skills',
+    instituteName: academySettings.instituteName || 'Nexgen Computer Academy',
+    instituteTagline: academySettings.tagline || 'Institute of Information Technology & Professional Skills',
     certTitle: 'Certificate of Professional Achievement',
     certSubtext: 'This is to officially certify that',
     studentName: '',
@@ -121,7 +121,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
     verificationUrl: '',
     instructorName: 'Course Instructor',
     instructorTitle: 'Lead Trainer & Specialist',
-    directorName: 'Prodip Chowdhury',
+    directorName: academySettings.idCardSignatoryName || 'Prodip Chowdhury',
     directorTitle: 'Managing Director & CEO',
     sealText: 'Official Seal Nexgen',
     showLogo: true,
@@ -178,14 +178,16 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
       const currentStudent = students.find(s => s.id === certificate.studentId);
       const currentCourse = courses.find(c => c.id === certificate.courseId);
       const currentBatch = batches.find(b => b.id === certificate.batchId);
-      const certCode = certificate.certificateCode || certificate.certificateNumber || 'NCA-CERT-001';
+      const certCode = certificate.certificateCode || certificate.certificateNumber || 'NCA-CERT-2026-5172';
       const durationW = currentCourse?.durationWeeks || (currentCourse?.durationMonths ? currentCourse.durationMonths * 4 : 12);
       const totalHrs = currentCourse?.totalHours || 72;
+      const baseUrl = academySettings.certificateVerificationBaseUrl || 'https://nexgenacademy.edu.bd/verify/';
+      const defaultVerifyLink = baseUrl.endsWith('/') ? `${baseUrl}${certCode}` : `${baseUrl}/${certCode}`;
 
       setCertData(prev => ({
         ...prev,
-        instituteName: 'Nexgen Computer Academy',
-        instituteTagline: 'Institute of Information Technology & Professional Skills',
+        instituteName: academySettings.instituteName || 'Nexgen Computer Academy',
+        instituteTagline: academySettings.tagline || 'Institute of Information Technology & Professional Skills',
         certTitle: 'Certificate of Professional Achievement',
         certSubtext: 'This is to officially certify that',
         studentName: currentStudent?.name || 'Student Name',
@@ -198,10 +200,10 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
         completionDate: certificate.completionDate || certificate.issueDate || new Date().toISOString().split('T')[0],
         issueDate: certificate.issueDate || new Date().toISOString().split('T')[0],
         certificateSerial: certCode,
-        verificationUrl: certificate.verificationId || `nca.edu/verify/${certCode}`,
+        verificationUrl: certificate.verificationId || defaultVerifyLink,
         instructorName: certificate.instructorSignatureName || 'Course Instructor',
         instructorTitle: 'Lead Trainer & Specialist',
-        directorName: 'Prodip Chowdhury',
+        directorName: academySettings.idCardSignatoryName || 'Prodip Chowdhury',
         directorTitle: 'Managing Director & CEO',
         sealText: 'Official Seal Nexgen',
         showLogo: true,
@@ -209,7 +211,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
         showVerification: true
       }));
     }
-  }, [certificate, students, courses, batches, isOpen]);
+  }, [certificate, students, courses, batches, isOpen, academySettings]);
 
   // Handle ESC key press to close modal
   useEffect(() => {
@@ -635,15 +637,22 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                   />
                 </div>
 
-                {/* Verification ID */}
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Online Verification Key</label>
+                {/* Verification URL (Verified Online) */}
+                <div className="sm:col-span-2 bg-emerald-50/60 p-3 rounded-xl border border-emerald-200">
+                  <label className="block font-bold text-emerald-950 mb-1 flex items-center space-x-1.5 text-xs">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                    <span>Verified Online URL (অনলাইন সার্টিফিকেট ভেরিফিকেশন লিংক - যেকোনো লিংক দিতে পারেন)</span>
+                  </label>
                   <input
                     type="text"
                     value={certData.verificationUrl}
                     onChange={e => setCertData({ ...certData, verificationUrl: e.target.value })}
-                    className="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-900 font-mono outline-none focus:border-indigo-500"
+                    placeholder="e.g. https://nexgenacademy.edu/verify/NCA-CERT-2026-5172"
+                    className="w-full bg-white border border-emerald-300 rounded-lg px-3 py-2 text-slate-900 font-mono text-xs outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                   />
+                  <p className="text-[11px] text-emerald-800 mt-1">
+                    This link is printed directly at the bottom left of the certificate next to the security shield badge.
+                  </p>
                 </div>
 
                 {/* Signatures */}
