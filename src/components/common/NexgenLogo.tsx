@@ -6,6 +6,10 @@ interface NexgenLogoProps {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | number;
   showTagline?: boolean;
   customLogoUrl?: string;
+  titleFontSize?: number;
+  taglineFontSize?: number;
+  instituteName?: string;
+  tagline?: string;
 }
 
 export const NexgenLogo: React.FC<NexgenLogoProps> = ({
@@ -13,10 +17,42 @@ export const NexgenLogo: React.FC<NexgenLogoProps> = ({
   className = '',
   size = 'md',
   showTagline = true,
-  customLogoUrl
+  customLogoUrl,
+  titleFontSize,
+  taglineFontSize,
+  instituteName,
+  tagline
 }) => {
   const [logoSrc, setLogoSrc] = useState<string | null>(customLogoUrl || null);
   const [imageError, setImageError] = useState(false);
+  const [settings, setSettings] = useState<{
+    instituteName: string;
+    tagline: string;
+    logoFontSize: number;
+    taglineFontSize: number;
+  }>({
+    instituteName: 'Nexgen Computer Academy',
+    tagline: 'Institute of Information Technology & Professional Skills',
+    logoFontSize: 16,
+    taglineFontSize: 11
+  });
+
+  useEffect(() => {
+    try {
+      const storedSettings = localStorage.getItem('NEXGEN_OFFICE_ACADEMY_DB_V1_academy_settings');
+      if (storedSettings) {
+        const parsed = JSON.parse(storedSettings);
+        setSettings({
+          instituteName: parsed.instituteName || 'Nexgen Computer Academy',
+          tagline: parsed.tagline || 'Institute of Information Technology & Professional Skills',
+          logoFontSize: parsed.logoFontSize || 16,
+          taglineFontSize: parsed.taglineFontSize || 11
+        });
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
 
   useEffect(() => {
     if (customLogoUrl) {
@@ -371,6 +407,11 @@ export const NexgenLogo: React.FC<NexgenLogoProps> = ({
   }
 
   if (variant === 'horizontal') {
+    const effectiveTitle = instituteName || settings.instituteName;
+    const effectiveTagline = tagline || settings.tagline;
+    const effectiveTitleSize = titleFontSize || settings.logoFontSize || 16;
+    const effectiveTaglineSize = taglineFontSize || settings.taglineFontSize || 11;
+
     return (
       <div className={`inline-flex items-center space-x-3 ${className}`}>
         {hasCustomImg ? (
@@ -380,16 +421,22 @@ export const NexgenLogo: React.FC<NexgenLogoProps> = ({
         )}
         <div>
           <div className="flex items-center space-x-2">
-            <span className="text-base font-black text-slate-900 tracking-tight leading-none uppercase">
-              Nexgen Computer Academy
+            <span
+              style={{ fontSize: `${effectiveTitleSize}px` }}
+              className="font-black text-slate-900 tracking-tight leading-none uppercase"
+            >
+              {effectiveTitle}
             </span>
-            <span className="text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60 px-1.5 py-0.2 rounded-full">
+            <span className="text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60 px-1.5 py-0.2 rounded-full shrink-0">
               EST. 2018
             </span>
           </div>
           {showTagline && (
-            <p className="text-[11px] text-slate-500 font-medium leading-tight mt-0.5">
-              Center for IT, Software & Professional Skills
+            <p
+              style={{ fontSize: `${effectiveTaglineSize}px` }}
+              className="text-slate-500 font-medium leading-tight mt-0.5"
+            >
+              {effectiveTagline}
             </p>
           )}
         </div>

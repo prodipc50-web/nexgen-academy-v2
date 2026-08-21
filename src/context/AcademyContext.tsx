@@ -29,7 +29,8 @@ import {
   Assignment,
   AssignmentSubmission,
   SeminarWorkshop,
-  InstallmentMilestone
+  InstallmentMilestone,
+  AcademySettings
 } from '../types';
 import {
   INITIAL_STAFF,
@@ -63,6 +64,10 @@ interface AcademyContextType {
   isAuthenticated: boolean;
   login: (identifier: string, password: string, rememberMe?: boolean) => { success: boolean; message: string; user?: UserProfile };
   logout: () => void;
+  updateCurrentUserProfile: (updates: Partial<UserProfile>) => void;
+  updateStaffPhoto: (staffId: string, photoUrl: string) => void;
+  academySettings: AcademySettings;
+  updateAcademySettings: (settings: Partial<AcademySettings>) => void;
   changePassword: (staffId: string, oldPass: string, newPass: string) => { success: boolean; message: string };
   updateStaffCredentials: (staffId: string, username: string, newPassword?: string) => void;
   setCurrentUserRole: (role: UserRole) => void;
@@ -655,6 +660,79 @@ export const AcademyProvider: React.FC<{ children: React.ReactNode }> = ({ child
       'Special Discretion Waiver'
     ];
   });
+
+  const [academySettings, setAcademySettings] = useState<AcademySettings>(() => {
+    const saved = localStorage.getItem(`${STORAGE_KEY}_academy_settings`);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing academy settings', e);
+      }
+    }
+    return {
+      instituteName: 'Nexgen Computer Academy',
+      tagline: 'Institute of Information Technology & Professional Skills',
+      officialAddress: '14/B Garden Road, Farmgate, Dhaka-1215',
+      officialEmail: 'info@nexgenacademy.edu.bd',
+      helplines: ['+880 1711-223344', '+880 1811-556677', '+880 1911-889900'],
+      websiteUrl: 'https://nexgenacademy.edu.bd',
+      logoIconSize: 48,
+      logoFontSize: 16,
+      taglineFontSize: 11
+    };
+  });
+
+  useEffect(() => {
+    localStorage.setItem(`${STORAGE_KEY}_academy_settings`, JSON.stringify(academySettings));
+  }, [academySettings]);
+
+  const updateAcademySettings = (updates: Partial<AcademySettings>) => {
+    setAcademySettings(prev => {
+      const updated = { ...prev, ...updates };
+      localStorage.setItem(`${STORAGE_KEY}_academy_settings`, JSON.stringify(updated));
+      return updated;
+    });
+    logAudit('Academy Profile Updated', 'Settings', 'profile', 'Updated institute branding, helpline numbers and contact info');
+  };
+
+  const updateCurrentUserProfile = (updates: Partial<UserProfile>) => {
+    setCurrentUser(prev => {
+      const updated = { ...prev, ...updates };
+      localStorage.setItem(`${STORAGE_KEY}_current_user`, JSON.stringify(updated));
+      sessionStorage.setItem(`${STORAGE_KEY}_current_user`, JSON.stringify(updated));
+      return updated;
+    });
+
+    if (updates.avatar || updates.name || updates.phone || updates.email) {
+      setStaffList(prev => prev.map(s => {
+        if (s.id === currentUser.id || (s.email && s.email.toLowerCase() === currentUser.email.toLowerCase()) || s.name === currentUser.name) {
+          return {
+            ...s,
+            ...(updates.name ? { name: updates.name } : {}),
+            ...(updates.avatar ? { avatarUrl: updates.avatar } : {}),
+            ...(updates.phone ? { phone: updates.phone } : {}),
+            ...(updates.email ? { email: updates.email } : {})
+          };
+        }
+        return s;
+      }));
+    }
+    logAudit('Profile Photo/Info Updated', 'User Profile', currentUser.id, 'Updated personal user profile and avatar picture');
+  };
+
+  const updateStaffPhoto = (staffId: string, photoUrl: string) => {
+    setStaffList(prev => prev.map(s => (s.id === staffId ? { ...s, avatarUrl: photoUrl } : s)));
+    if (currentUser.id === staffId || currentUser.name === staffList.find(s => s.id === staffId)?.name) {
+      setCurrentUser(prev => {
+        const updated = { ...prev, avatar: photoUrl };
+        localStorage.setItem(`${STORAGE_KEY}_current_user`, JSON.stringify(updated));
+        sessionStorage.setItem(`${STORAGE_KEY}_current_user`, JSON.stringify(updated));
+        return updated;
+      });
+    }
+    logAudit('Staff Photo Updated', 'Staff Management', staffId, `Updated photo avatar for staff ID: ${staffId}`);
+  };
 
   // Cloud Sync State & Loop Prevention
   const [cloudSyncStatus, setCloudSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('syncing');
@@ -2899,6 +2977,10 @@ export const AcademyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         isAuthenticated,
         login,
         logout,
+        updateCurrentUserProfile,
+        updateStaffPhoto,
+        academySettings,
+        updateAcademySettings,
         changePassword,
         updateStaffCredentials,
         setCurrentUserRole,

@@ -10,12 +10,16 @@ import {
   XCircle,
   Save,
   Users,
-  Trash2
+  Trash2,
+  Search,
+  BookOpen,
+  Filter
 } from 'lucide-react';
 
 export const AttendanceView: React.FC = () => {
   const {
     batches,
+    courses,
     admissions,
     students,
     attendance,
@@ -26,15 +30,31 @@ export const AttendanceView: React.FC = () => {
 
   const [selectedBatchId, setSelectedBatchId] = useState(batches[0]?.id || '');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [showDeleteBatchConfirm, setShowDeleteBatchConfirm] = useState(false);
+  const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
 
   // Local state for attendance form records
   const [sheetRecords, setSheetRecords] = useState<{ [studentId: string]: { status: AttendanceStatus; note: string } }>({});
+
+  const currentBatch = batches.find(b => b.id === selectedBatchId);
+  const currentCourse = courses.find(c => c.id === currentBatch?.courseId);
 
   const batchStudents = admissions
     .filter(a => a.batchId === selectedBatchId)
     .map(a => students.find(s => s.id === a.studentId))
     .filter(Boolean);
+
+  const filteredStudents = batchStudents.filter(stu => {
+    if (!stu) return false;
+    if (!searchTerm) return true;
+    const q = searchTerm.toLowerCase();
+    return (
+      stu.name.toLowerCase().includes(q) ||
+      stu.studentCode.toLowerCase().includes(q) ||
+      stu.phone.includes(q)
+    );
+  });
 
   // Initialize sheet records when batch or date changes
   useEffect(() => {
@@ -92,7 +112,10 @@ export const AttendanceView: React.FC = () => {
       note: data.note || undefined
     }));
     bulkSaveAttendance(selectedBatchId, selectedDate, payload);
-    alert('Attendance marked and saved successfully!');
+    setSaveSuccessMsg(`Attendance for Batch #${currentBatch?.batchNumber || ''} on ${selectedDate} saved successfully!`);
+    setTimeout(() => {
+      setSaveSuccessMsg('');
+    }, 3500);
   };
 
   // Metrics for current sheet
@@ -110,14 +133,14 @@ export const AttendanceView: React.FC = () => {
         <div>
           <div className="flex items-center space-x-2">
             <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              Daily Batch Attendance Register
+              Daily Batch Attendance Register (ম্যানুয়াল হাজিরা)
             </h2>
             <span className="text-xs font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
               Live Sheet
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            Mark daily student attendance, track late arrivals, record absence reasons, and monitor attendance %
+            ব্যাচ অনুযায়ী তারিখ সিলেক্ট করে সরাসরি ম্যানুয়ালি ছাত্রদের উপস্থিতি (Present, Late, Absent, Excused) দিন ও সেভ করুন
           </p>
         </div>
 
@@ -143,53 +166,96 @@ export const AttendanceView: React.FC = () => {
         </div>
       </div>
 
+      {/* Success Notification Alert */}
+      {saveSuccessMsg && (
+        <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between text-emerald-900 text-xs font-semibold animate-in fade-in">
+          <div className="flex items-center space-x-2.5">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{saveSuccessMsg}</span>
+          </div>
+          <button onClick={() => setSaveSuccessMsg('')} className="text-emerald-700 hover:text-emerald-900 text-xs font-bold">
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Selectors & Quick Actions Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-4 text-xs">
-        <div className="flex flex-wrap items-center gap-3">
-          <div>
-            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-              Select Batch
-            </label>
-            <select
-              value={selectedBatchId}
-              onChange={e => setSelectedBatchId(e.target.value)}
-              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-bold outline-none"
-            >
-              {batches.map(b => (
-                <option key={b.id} value={b.id}>
-                  Batch #{b.batchNumber} ({b.classDays} - {b.classTime})
-                </option>
-              ))}
-            </select>
+      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-4 text-xs">
+          <div className="flex flex-wrap items-center gap-3">
+            <div>
+              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                Select Batch (ব্যাচ নির্বাচন)
+              </label>
+              <select
+                value={selectedBatchId}
+                onChange={e => setSelectedBatchId(e.target.value)}
+                className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-bold outline-none focus:ring-2 focus:ring-indigo-600"
+              >
+                {batches.map(b => (
+                  <option key={b.id} value={b.id}>
+                    Batch #{b.batchNumber} ({b.classDays} - {b.classTime})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                Attendance Date (তারিখ)
+              </label>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={e => setSelectedDate(e.target.value)}
+                className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-semibold outline-none focus:ring-2 focus:ring-indigo-600"
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-              Attendance Date
-            </label>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={e => setSelectedDate(e.target.value)}
-              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-semibold outline-none"
-            />
+          {/* Quick 1-Click Mass Fill Actions */}
+          <div className="flex items-center space-x-2">
+            <span className="text-[11px] font-bold text-slate-500 mr-1">Quick Fill:</span>
+            <button
+              type="button"
+              onClick={() => markAll('Present')}
+              className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold rounded-lg transition-colors text-xs"
+            >
+              All Present
+            </button>
+            <button
+              type="button"
+              onClick={() => markAll('Absent')}
+              className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-800 font-bold rounded-lg transition-colors text-xs"
+            >
+              All Absent
+            </button>
           </div>
         </div>
 
-        {/* Quick 1-Click Mass Fill Actions */}
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => markAll('Present')}
-            className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold rounded-lg transition-colors"
-          >
-            All Present
-          </button>
-          <button
-            onClick={() => markAll('Absent')}
-            className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-800 font-bold rounded-lg transition-colors"
-          >
-            All Absent
-          </button>
+        {/* Batch Info Snippet & Filter */}
+        <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center space-x-3 text-xs text-slate-600">
+            <span className="font-semibold text-slate-900">
+              Course: <strong className="text-indigo-700">{currentCourse?.name || 'Selected Course'}</strong>
+            </span>
+            <span className="text-slate-300">•</span>
+            <span>Trainer: <strong className="text-slate-800">{currentBatch?.trainerName || 'Assigned Instructor'}</strong></span>
+            <span className="text-slate-300">•</span>
+            <span>Room: <strong className="text-slate-800">{currentBatch?.room || 'Lab 1'}</strong></span>
+          </div>
+
+          {/* Search box within this batch */}
+          <div className="relative max-w-xs w-full">
+            <input
+              type="text"
+              placeholder="Search student in batch..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-600"
+            />
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+          </div>
         </div>
       </div>
 
@@ -197,7 +263,7 @@ export const AttendanceView: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
         <div className="bg-emerald-50/70 border border-emerald-200 p-3 rounded-xl flex items-center justify-between">
           <div>
-            <span className="text-emerald-700 font-bold block">Present</span>
+            <span className="text-emerald-700 font-bold block">Present (উপস্থিত)</span>
             <span className="text-xl font-black text-emerald-950">{presentCount}</span>
           </div>
           <CheckCircle2 className="w-5 h-5 text-emerald-600 opacity-60" />
@@ -205,7 +271,7 @@ export const AttendanceView: React.FC = () => {
 
         <div className="bg-amber-50/70 border border-amber-200 p-3 rounded-xl flex items-center justify-between">
           <div>
-            <span className="text-amber-800 font-bold block">Late</span>
+            <span className="text-amber-800 font-bold block">Late (দেরি)</span>
             <span className="text-xl font-black text-amber-950">{lateCount}</span>
           </div>
           <Clock className="w-5 h-5 text-amber-600 opacity-60" />
@@ -213,7 +279,7 @@ export const AttendanceView: React.FC = () => {
 
         <div className="bg-rose-50/70 border border-rose-200 p-3 rounded-xl flex items-center justify-between">
           <div>
-            <span className="text-rose-700 font-bold block">Absent</span>
+            <span className="text-rose-700 font-bold block">Absent (অনুপস্থিত)</span>
             <span className="text-xl font-black text-rose-950">{absentCount}</span>
           </div>
           <XCircle className="w-5 h-5 text-rose-600 opacity-60" />
@@ -221,7 +287,7 @@ export const AttendanceView: React.FC = () => {
 
         <div className="bg-indigo-50/70 border border-indigo-200 p-3 rounded-xl flex items-center justify-between">
           <div>
-            <span className="text-indigo-700 font-bold block">Excused</span>
+            <span className="text-indigo-700 font-bold block">Excused (ছুটি)</span>
             <span className="text-xl font-black text-indigo-950">{excusedCount}</span>
           </div>
           <Users className="w-5 h-5 text-indigo-600 opacity-60" />
@@ -237,12 +303,12 @@ export const AttendanceView: React.FC = () => {
                 <th className="py-3 px-4">Student Profile</th>
                 <th className="py-3 px-4">Phone</th>
                 <th className="py-3 px-4">Historical Rate</th>
-                <th className="py-3 px-4">Mark Status</th>
+                <th className="py-3 px-4">Mark Status (ম্যানুয়াল হাজিরা)</th>
                 <th className="py-3 px-4">Remark / Absence Note</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {batchStudents.map(student => {
+              {filteredStudents.map(student => {
                 if (!student) return null;
                 const rec = sheetRecords[student.id] || { status: 'Present', note: '' };
 
@@ -320,10 +386,10 @@ export const AttendanceView: React.FC = () => {
                 );
               })}
 
-              {batchStudents.length === 0 && (
+              {filteredStudents.length === 0 && (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-slate-400">
-                    No students currently enrolled in this batch.
+                    {searchTerm ? 'No student matched the search criteria in this batch.' : 'No students currently enrolled in this batch.'}
                   </td>
                 </tr>
               )}

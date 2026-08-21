@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAcademy } from '../../context/AcademyContext';
 import { NexgenLogo } from '../common/NexgenLogo';
 import {
@@ -19,7 +19,13 @@ import {
   PlusCircle,
   Edit2,
   X,
-  Check
+  Check,
+  Phone,
+  Mail,
+  MapPin,
+  Type,
+  Maximize2,
+  Save
 } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
@@ -27,6 +33,8 @@ export const SettingsView: React.FC = () => {
     currentUser,
     auditLogs,
     resetToSeedData,
+    academySettings,
+    updateAcademySettings,
     leadSourcesList,
     addLeadSource,
     updateLeadSource,
@@ -65,8 +73,73 @@ export const SettingsView: React.FC = () => {
     deleteDiscountType
   } = useAcademy();
 
-  const [activeTab, setActiveTab] = useState<'rbac' | 'audit' | 'backup' | 'profile' | 'dropdowns'>('dropdowns');
+  const [activeTab, setActiveTab] = useState<'profile' | 'dropdowns' | 'rbac' | 'audit' | 'backup'>('profile');
   const [resetSuccess, setResetSuccess] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Local state for Academy Profile & Logo editing
+  const [profileForm, setProfileForm] = useState({
+    instituteName: academySettings.instituteName || 'Nexgen Computer Academy',
+    tagline: academySettings.tagline || 'Institute of Information Technology & Professional Skills',
+    officialAddress: academySettings.officialAddress || '14/B Garden Road, Farmgate, Dhaka-1215',
+    officialEmail: academySettings.officialEmail || 'info@nexgenacademy.edu.bd',
+    helplines: academySettings.helplines || ['+880 1711-223344', '+880 1811-556677', '+880 1911-889900'],
+    websiteUrl: academySettings.websiteUrl || 'https://nexgenacademy.edu.bd',
+    logoIconSize: academySettings.logoIconSize || 48,
+    logoFontSize: academySettings.logoFontSize || 16,
+    taglineFontSize: academySettings.taglineFontSize || 11
+  });
+
+  const [newHelplineInput, setNewHelplineInput] = useState('');
+
+  useEffect(() => {
+    setProfileForm({
+      instituteName: academySettings.instituteName || 'Nexgen Computer Academy',
+      tagline: academySettings.tagline || 'Institute of Information Technology & Professional Skills',
+      officialAddress: academySettings.officialAddress || '14/B Garden Road, Farmgate, Dhaka-1215',
+      officialEmail: academySettings.officialEmail || 'info@nexgenacademy.edu.bd',
+      helplines: academySettings.helplines || ['+880 1711-223344', '+880 1811-556677', '+880 1911-889900'],
+      websiteUrl: academySettings.websiteUrl || 'https://nexgenacademy.edu.bd',
+      logoIconSize: academySettings.logoIconSize || 48,
+      logoFontSize: academySettings.logoFontSize || 16,
+      taglineFontSize: academySettings.taglineFontSize || 11
+    });
+  }, [academySettings]);
+
+  const handleAddHelpline = () => {
+    const trimmed = newHelplineInput.trim();
+    if (!trimmed) return;
+    if (profileForm.helplines.includes(trimmed)) {
+      alert('This helpline number is already in the list.');
+      return;
+    }
+    setProfileForm(prev => ({
+      ...prev,
+      helplines: [...prev.helplines, trimmed]
+    }));
+    setNewHelplineInput('');
+  };
+
+  const handleRemoveHelpline = (index: number) => {
+    setProfileForm(prev => ({
+      ...prev,
+      helplines: prev.helplines.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleUpdateHelpline = (index: number, val: string) => {
+    setProfileForm(prev => {
+      const updated = [...prev.helplines];
+      updated[index] = val;
+      return { ...prev, helplines: updated };
+    });
+  };
+
+  const handleSaveProfile = () => {
+    updateAcademySettings(profileForm);
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 3000);
+  };
 
   // Master Dropdown active category & states
   const [dropdownSection, setDropdownSection] = useState<
@@ -587,16 +660,117 @@ export const SettingsView: React.FC = () => {
 
       {/* TAB 4: PROFILE */}
       {activeTab === 'profile' && (
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs max-w-2xl space-y-6 text-xs">
-          <div>
-            <h3 className="text-sm font-bold text-slate-900">Institution Profile & Custom Logo Configuration</h3>
-            <p className="text-xs text-slate-500">Manage institute branding, custom logo upload, contact details, and receipt addresses.</p>
+        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-2xs max-w-3xl space-y-6 text-xs animate-in fade-in duration-150">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+            <div>
+              <h3 className="text-base font-black text-slate-900 tracking-tight flex items-center space-x-2">
+                <Building className="w-5 h-5 text-indigo-600" />
+                <span>Academy Profile & Branding Settings</span>
+              </h3>
+              <p className="text-xs text-slate-500">
+                Configure multiple helpline numbers, official email, logo font sizes, and institute profile.
+              </p>
+            </div>
+
+            <button
+              onClick={handleSaveProfile}
+              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-xs inline-flex items-center space-x-2 transition-colors self-start sm:self-auto"
+            >
+              <Save className="w-4 h-4" />
+              <span>Save Settings (সেটিংস সংরক্ষণ করুন)</span>
+            </button>
+          </div>
+
+          {saveSuccess && (
+            <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-2xl flex items-center space-x-2 font-bold text-xs">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Academy profile, helpline numbers, and logo font settings saved successfully!</span>
+            </div>
+          )}
+
+          {/* Live Preview Box */}
+          <div className="bg-slate-900 text-white p-5 rounded-2xl shadow-md space-y-2">
+            <div className="flex items-center justify-between text-[11px] text-slate-400 font-bold uppercase tracking-wider">
+              <span>Live Header Logo Preview (লাইভ লোগো প্রিভিউ)</span>
+              <span className="text-indigo-400 font-mono">Font Size: {profileForm.logoFontSize}px</span>
+            </div>
+            <div className="p-4 bg-slate-800/80 rounded-xl border border-slate-700/60 flex items-center justify-between">
+              <NexgenLogo
+                variant="horizontal"
+                size={profileForm.logoIconSize}
+                titleFontSize={profileForm.logoFontSize}
+                taglineFontSize={profileForm.taglineFontSize}
+                instituteName={profileForm.instituteName}
+                tagline={profileForm.tagline}
+              />
+            </div>
+          </div>
+
+          {/* Logo Font Size & Icon Size Customization */}
+          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-4">
+            <div className="flex items-center space-x-2 font-bold text-slate-800 text-sm">
+              <Type className="w-4 h-4 text-indigo-600" />
+              <span>Logo & Typography Size Adjustment (লোগোর ফন্ট সাইজ নিয়ন্ত্রণ)</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Logo Title Font Size */}
+              <div className="bg-white p-3 rounded-xl border border-slate-200 space-y-2">
+                <div className="flex items-center justify-between font-semibold text-slate-700">
+                  <span>Title Font Size:</span>
+                  <span className="font-mono font-bold text-indigo-600 text-xs">{profileForm.logoFontSize}px</span>
+                </div>
+                <input
+                  type="range"
+                  min="12"
+                  max="28"
+                  step="1"
+                  value={profileForm.logoFontSize}
+                  onChange={e => setProfileForm({ ...profileForm, logoFontSize: parseInt(e.target.value) || 16 })}
+                  className="w-full accent-indigo-600"
+                />
+              </div>
+
+              {/* Tagline Font Size */}
+              <div className="bg-white p-3 rounded-xl border border-slate-200 space-y-2">
+                <div className="flex items-center justify-between font-semibold text-slate-700">
+                  <span>Tagline Font Size:</span>
+                  <span className="font-mono font-bold text-indigo-600 text-xs">{profileForm.taglineFontSize}px</span>
+                </div>
+                <input
+                  type="range"
+                  min="9"
+                  max="16"
+                  step="1"
+                  value={profileForm.taglineFontSize}
+                  onChange={e => setProfileForm({ ...profileForm, taglineFontSize: parseInt(e.target.value) || 11 })}
+                  className="w-full accent-indigo-600"
+                />
+              </div>
+
+              {/* Logo Icon Dimension */}
+              <div className="bg-white p-3 rounded-xl border border-slate-200 space-y-2">
+                <div className="flex items-center justify-between font-semibold text-slate-700">
+                  <span>Logo Icon Size:</span>
+                  <span className="font-mono font-bold text-indigo-600 text-xs">{profileForm.logoIconSize}px</span>
+                </div>
+                <input
+                  type="range"
+                  min="28"
+                  max="80"
+                  step="2"
+                  value={profileForm.logoIconSize}
+                  onChange={e => setProfileForm({ ...profileForm, logoIconSize: parseInt(e.target.value) || 48 })}
+                  className="w-full accent-indigo-600"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Logo Uploader */}
-          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-            <label className="font-bold text-slate-800 block">
-              Official Institute Logo (লোগো পরিবর্তন / আপলোড)
+          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+            <label className="font-bold text-slate-800 block text-sm">
+              Official Institute Logo (লোগো পরিবর্তন / পিসি থেকে আপলোড)
             </label>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center space-x-3">
@@ -649,62 +823,139 @@ export const SettingsView: React.FC = () => {
             </div>
           </div>
 
-          <div className="space-y-3">
+          {/* Institute Basic Details */}
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">Academy Name (প্রতিষ্ঠানের নাম)</label>
+                <input
+                  type="text"
+                  value={profileForm.instituteName}
+                  onChange={e => setProfileForm({ ...profileForm, instituteName: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 font-bold outline-none focus:border-indigo-500 focus:bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">Official Tagline / Subtitle</label>
+                <input
+                  type="text"
+                  value={profileForm.tagline}
+                  onChange={e => setProfileForm({ ...profileForm, tagline: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 font-medium outline-none focus:border-indigo-500 focus:bg-white"
+                />
+              </div>
+            </div>
+
             <div>
-              <label className="block text-slate-600 font-semibold mb-1">Academy Name</label>
+              <label className="block text-slate-700 font-bold mb-1 flex items-center space-x-1.5">
+                <MapPin className="w-4 h-4 text-slate-500" />
+                <span>Official Address (অফিসের ঠিকানা)</span>
+              </label>
               <input
                 type="text"
-                defaultValue="Nexgen Computer Academy"
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-900 font-bold"
+                value={profileForm.officialAddress}
+                onChange={e => setProfileForm({ ...profileForm, officialAddress: e.target.value })}
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 font-medium outline-none focus:border-indigo-500 focus:bg-white"
               />
             </div>
 
-            <div>
-              <label className="block text-slate-600 font-semibold mb-1">Official Address</label>
-              <input
-                type="text"
-                defaultValue="14/B Garden Road, Farmgate, Dhaka-1215"
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-900 font-medium"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-slate-600 font-semibold mb-1">Helpline Phone</label>
+                <label className="block text-slate-700 font-bold mb-1 flex items-center space-x-1.5">
+                  <Mail className="w-4 h-4 text-slate-500" />
+                  <span>Official Email (অফিসিয়াল ইমেইল)</span>
+                </label>
                 <input
-                  type="text"
-                  defaultValue="+880 1711-223344"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-900"
+                  type="email"
+                  value={profileForm.officialEmail}
+                  onChange={e => setProfileForm({ ...profileForm, officialEmail: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 outline-none focus:border-indigo-500 focus:bg-white font-medium"
                 />
               </div>
+
               <div>
-                <label className="block text-slate-600 font-semibold mb-1">Official Email</label>
+                <label className="block text-slate-700 font-bold mb-1">Official Website URL</label>
                 <input
                   type="text"
-                  defaultValue="admissions@nexgenacademy.edu.bd"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-900"
+                  value={profileForm.websiteUrl}
+                  onChange={e => setProfileForm({ ...profileForm, websiteUrl: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 outline-none focus:border-indigo-500 focus:bg-white font-medium"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-slate-600 font-semibold mb-1">Currency Code</label>
+            {/* Multiple Helpline Numbers Management */}
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="font-bold text-slate-800 flex items-center space-x-1.5 text-sm">
+                  <Phone className="w-4 h-4 text-emerald-600" />
+                  <span>Helpline Numbers (একাধিক হেল্পলাইন নম্বর যোগ ও এডিট করুন)</span>
+                </label>
+                <span className="text-[11px] text-slate-500 font-bold">
+                  {profileForm.helplines.length} Numbers Active
+                </span>
+              </div>
+
+              {/* List of current helplines */}
+              <div className="space-y-2">
+                {profileForm.helplines.map((helpline, idx) => (
+                  <div key={idx} className="flex items-center space-x-2 bg-white p-2 rounded-xl border border-slate-200">
+                    <span className="text-[11px] font-bold text-slate-400 w-6 text-center">#{idx + 1}</span>
+                    <input
+                      type="text"
+                      value={helpline}
+                      onChange={e => handleUpdateHelpline(idx, e.target.value)}
+                      placeholder="e.g. +880 1711-000000"
+                      className="flex-1 bg-transparent text-slate-900 font-semibold text-xs outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveHelpline(idx)}
+                      className="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg hover:bg-rose-50 transition-colors"
+                      title="Remove this helpline"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Add New Helpline Row */}
+              <div className="flex items-center space-x-2 pt-1">
                 <input
                   type="text"
-                  defaultValue="BDT (৳)"
-                  disabled
-                  className="w-full bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-slate-700 font-bold"
+                  placeholder="Enter new helpline number (e.g. +880 1799-887766)..."
+                  value={newHelplineInput}
+                  onChange={e => setNewHelplineInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddHelpline();
+                    }
+                  }}
+                  className="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-900 text-xs outline-none focus:border-indigo-500"
                 />
+                <button
+                  type="button"
+                  onClick={handleAddHelpline}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs inline-flex items-center space-x-1.5 transition-colors"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  <span>Add Helpline (যোগ করুন)</span>
+                </button>
               </div>
-              <div>
-                <label className="block text-slate-600 font-semibold mb-1">Govt. Reg / Trade License</label>
-                <input
-                  type="text"
-                  defaultValue="TRAD/DNCC/019284/2024"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-900 font-mono"
-                />
-              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={handleSaveProfile}
+                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-xs inline-flex items-center space-x-2 transition-colors"
+              >
+                <Save className="w-4 h-4" />
+                <span>Save All Academy Profile Settings</span>
+              </button>
             </div>
           </div>
         </div>

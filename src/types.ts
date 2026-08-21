@@ -19,6 +19,19 @@ export interface UserProfile {
   lastLogin?: string;
 }
 
+export interface AcademySettings {
+  instituteName: string;
+  tagline: string;
+  officialAddress: string;
+  officialEmail: string;
+  helplines: string[];
+  websiteUrl: string;
+  logoIconSize: number; // default 48
+  logoFontSize: number; // default 16
+  taglineFontSize: number; // default 11
+  customLogoUrl?: string;
+}
+
 export type LeadStatus =
   | 'New'
   | 'Contacted'

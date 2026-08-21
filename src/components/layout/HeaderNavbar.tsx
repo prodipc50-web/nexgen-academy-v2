@@ -20,9 +20,11 @@ import {
   LogOut,
   KeyRound,
   User,
+  Camera,
+  Crop,
   Cloud,
-  CloudCheck,
-  RefreshCw
+  RefreshCw,
+  Check
 } from 'lucide-react';
 
 interface HeaderNavbarProps {
@@ -59,6 +61,7 @@ export const HeaderNavbar: React.FC<HeaderNavbarProps> = ({
   const [showNotifications, setShowNotifications] = useState(false);
   const [showRoleMenu, setShowRoleMenu] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordModalTab, setPasswordModalTab] = useState<'profile' | 'password'>('profile');
 
   const roles: { role: UserRole; label: string; icon: any; color: string }[] = [
     { role: 'SUPER_ADMIN', label: 'Super Admin', icon: Shield, color: 'bg-rose-100 text-rose-700' },
@@ -148,7 +151,7 @@ export const HeaderNavbar: React.FC<HeaderNavbarProps> = ({
         >
           {cloudSyncStatus === 'synced' ? (
             <>
-              <CloudCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <Check className="w-3.5 h-3.5 text-emerald-600" />
               <span className="text-[11px] font-bold">Cloud Safe</span>
             </>
           ) : cloudSyncStatus === 'syncing' ? (
@@ -324,15 +327,30 @@ export const HeaderNavbar: React.FC<HeaderNavbarProps> = ({
                 <div className="text-[10px] text-slate-400 font-mono mt-0.5">User: {currentUser.username || 'admin'}</div>
               </div>
 
-              {/* Password & Profile Security Action */}
-              <div className="py-1 border-b border-slate-100">
+              {/* Profile & Photo Crop Action */}
+              <div className="py-1 border-b border-slate-100 space-y-0.5">
                 <button
                   type="button"
-                  onClick={() => setShowPasswordModal(true)}
+                  onClick={() => {
+                    setPasswordModalTab('profile');
+                    setShowPasswordModal(true);
+                  }}
+                  className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition-colors"
+                >
+                  <Camera className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Edit Picture & Profile (ছবি ক্রপ)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPasswordModalTab('password');
+                    setShowPasswordModal(true);
+                  }}
                   className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition-colors"
                 >
                   <KeyRound className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Change Password</span>
+                  <span>Change Password (পাসওয়ার্ড)</span>
                 </button>
               </div>
 
@@ -380,10 +398,11 @@ export const HeaderNavbar: React.FC<HeaderNavbarProps> = ({
         </div>
       </div>
 
-      {/* Password Change Modal */}
+      {/* User Profile & Password Modal */}
       <UserProfilePasswordModal
         isOpen={showPasswordModal}
         onClose={() => setShowPasswordModal(false)}
+        defaultTab={passwordModalTab}
       />
     </header>
   );

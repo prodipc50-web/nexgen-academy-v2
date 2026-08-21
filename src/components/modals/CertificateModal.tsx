@@ -129,7 +129,13 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
     showVerification: true,
     customLogoUrl: '',
     customWatermarkUrl: '',
-    watermarkOpacity: 0.05,
+    watermarkOpacity: 0.06,
+    watermarkSize: 420,
+    watermarkOffsetY: 0,
+    watermarkOffsetX: 0,
+    logoSize: 130,
+    certTitleSize: 15,
+    studentNameSize: 28,
     watermarkType: 'crest' as 'crest' | 'award' | 'custom'
   });
 
@@ -684,13 +690,14 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 />
               </div>
 
-              {/* Logo & Watermark Upload Controls */}
+              {/* Logo & Watermark Upload & Size Controls */}
               <div className="pt-3 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-white p-3 rounded-xl border border-slate-200 space-y-2">
+                {/* Main Logo Controls */}
+                <div className="bg-white p-3.5 rounded-2xl border border-slate-200 space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="font-bold text-slate-800 flex items-center space-x-1.5">
+                    <label className="font-bold text-slate-800 flex items-center space-x-1.5 text-xs">
                       <ImageIcon className="w-4 h-4 text-indigo-600" />
-                      <span>Custom Certificate Logo (লোগো আপলোড)</span>
+                      <span>Certificate Main Logo (মূল লোগো সাইজ ও আপলোড)</span>
                     </label>
                     {certData.customLogoUrl && (
                       <button
@@ -702,14 +709,30 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                       </button>
                     )}
                   </div>
+
+                  {/* Logo Size Slider */}
+                  <div className="flex items-center space-x-2 bg-slate-50 p-2 rounded-xl border border-slate-200 text-xs">
+                    <span className="text-slate-600 font-semibold shrink-0">Logo Size:</span>
+                    <input
+                      type="range"
+                      min="50"
+                      max="260"
+                      step="5"
+                      value={certData.logoSize}
+                      onChange={e => setCertData(prev => ({ ...prev, logoSize: parseInt(e.target.value) || 130 }))}
+                      className="flex-1 accent-indigo-600"
+                    />
+                    <span className="font-mono font-bold text-indigo-600 w-12 text-right">{certData.logoSize}px</span>
+                  </div>
+
                   <div className="flex items-center space-x-2">
                     <button
                       type="button"
                       onClick={() => logoFileInputRef.current?.click()}
-                      className="flex items-center space-x-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg font-bold border border-indigo-200 transition-colors text-xs"
+                      className="flex items-center space-x-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg font-bold border border-indigo-200 transition-colors text-xs shrink-0"
                     >
                       <Upload className="w-3.5 h-3.5" />
-                      <span>Upload Logo from PC</span>
+                      <span>Upload Logo</span>
                     </button>
                     <input
                       ref={logoFileInputRef}
@@ -728,33 +751,68 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                   </div>
                 </div>
 
-                <div className="bg-white p-3 rounded-xl border border-slate-200 space-y-2">
+                {/* Watermark Controls */}
+                <div className="bg-white p-3.5 rounded-2xl border border-slate-200 space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="font-bold text-slate-800 flex items-center space-x-1.5">
+                    <label className="font-bold text-slate-800 flex items-center space-x-1.5 text-xs">
                       <Sparkles className="w-4 h-4 text-amber-600" />
-                      <span>Certificate Watermark (জলছাপ কাস্টমাইজ)</span>
+                      <span>Watermark Size & Position (জলছাপ সাইজ ও পজিশন)</span>
                     </label>
-                    <div className="flex items-center space-x-1 text-[11px] text-slate-500">
-                      <span>Opacity:</span>
+                    <select
+                      value={certData.watermarkType}
+                      onChange={e => setCertData(prev => ({ ...prev, watermarkType: e.target.value as any }))}
+                      className="bg-slate-50 border border-slate-300 rounded-lg px-2 py-0.5 text-xs outline-none font-semibold"
+                    >
+                      <option value="crest">Nexgen Crest Watermark</option>
+                      <option value="award">Gold Award Watermark</option>
+                      <option value="custom">Custom Uploaded Image</option>
+                    </select>
+                  </div>
+
+                  {/* Watermark Size & Opacity Controls */}
+                  <div className="grid grid-cols-2 gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200 text-xs">
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] text-slate-600 font-semibold">Watermark Size:</span>
+                        <span className="font-mono font-bold text-amber-800 text-[11px]">{certData.watermarkSize}px</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="120"
+                        max="700"
+                        step="10"
+                        value={certData.watermarkSize}
+                        onChange={e => setCertData(prev => ({ ...prev, watermarkSize: parseInt(e.target.value) || 420 }))}
+                        className="w-full accent-amber-600"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] text-slate-600 font-semibold">Opacity:</span>
+                        <span className="font-mono font-bold text-amber-800 text-[11px]">{Math.round(certData.watermarkOpacity * 100)}%</span>
+                      </div>
                       <input
                         type="range"
                         min="0.01"
-                        max="0.25"
+                        max="0.35"
                         step="0.01"
                         value={certData.watermarkOpacity}
                         onChange={e => setCertData(prev => ({ ...prev, watermarkOpacity: parseFloat(e.target.value) }))}
-                        className="w-16 accent-indigo-600"
+                        className="w-full accent-amber-600"
                       />
                     </div>
                   </div>
+
+                  {/* Vertical Position Slider & Watermark Upload */}
                   <div className="flex items-center space-x-2">
                     <button
                       type="button"
                       onClick={() => watermarkFileInputRef.current?.click()}
-                      className="flex items-center space-x-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg font-bold border border-amber-200 transition-colors text-xs"
+                      className="flex items-center space-x-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg font-bold border border-amber-200 transition-colors text-xs shrink-0"
                     >
                       <Upload className="w-3.5 h-3.5" />
-                      <span>Upload Watermark</span>
+                      <span>Upload Image</span>
                     </button>
                     <input
                       ref={watermarkFileInputRef}
@@ -763,15 +821,53 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                       onChange={handleWatermarkUpload}
                       className="hidden"
                     />
-                    <select
-                      value={certData.watermarkType}
-                      onChange={e => setCertData(prev => ({ ...prev, watermarkType: e.target.value as any }))}
-                      className="bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-xs outline-none"
-                    >
-                      <option value="crest">Nexgen Crest Watermark</option>
-                      <option value="award">Gold Award Watermark</option>
-                      <option value="custom">Custom Uploaded Image</option>
-                    </select>
+                    <div className="flex-1 flex items-center space-x-1.5 bg-slate-50 px-2 py-1 rounded-lg border border-slate-200 text-[11px]">
+                      <span className="text-slate-500 shrink-0">V-Pos:</span>
+                      <input
+                        type="range"
+                        min="-120"
+                        max="120"
+                        step="5"
+                        value={certData.watermarkOffsetY}
+                        onChange={e => setCertData(prev => ({ ...prev, watermarkOffsetY: parseInt(e.target.value) || 0 }))}
+                        className="w-full accent-amber-600"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Typography Size Adjusters */}
+              <div className="pt-3 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs">
+                  <span className="font-semibold text-slate-700">Certificate Title Font Size:</span>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="range"
+                      min="12"
+                      max="24"
+                      step="1"
+                      value={certData.certTitleSize}
+                      onChange={e => setCertData({ ...certData, certTitleSize: parseInt(e.target.value) || 15 })}
+                      className="w-24 accent-indigo-600"
+                    />
+                    <span className="font-mono font-bold text-indigo-600">{certData.certTitleSize}px</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs">
+                  <span className="font-semibold text-slate-700">Student Name Font Size:</span>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="range"
+                      min="18"
+                      max="38"
+                      step="1"
+                      value={certData.studentNameSize}
+                      onChange={e => setCertData({ ...certData, studentNameSize: parseInt(e.target.value) || 28 })}
+                      className="w-24 accent-indigo-600"
+                    />
+                    <span className="font-mono font-bold text-indigo-600">{certData.studentNameSize}px</span>
                   </div>
                 </div>
               </div>
@@ -820,19 +916,23 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             {/* Subtle Background Watermark */}
             <div
               className={`absolute inset-0 flex items-center justify-center pointer-events-none ${themeStyles.watermark}`}
-              style={{ opacity: certData.watermarkOpacity || 0.05 }}
+              style={{
+                opacity: certData.watermarkOpacity || 0.06,
+                transform: `translate(${certData.watermarkOffsetX || 0}px, ${certData.watermarkOffsetY || 0}px)`
+              }}
             >
               {certData.watermarkType === 'custom' && certData.customWatermarkUrl ? (
                 <img
                   src={certData.customWatermarkUrl}
                   alt="Watermark"
                   referrerPolicy="no-referrer"
-                  className="w-[420px] h-[420px] object-contain select-none"
+                  style={{ width: `${certData.watermarkSize || 420}px`, height: `${certData.watermarkSize || 420}px` }}
+                  className="object-contain select-none"
                 />
               ) : certData.watermarkType === 'crest' ? (
-                <NexgenLogo variant="crest" size={380} customLogoUrl={certData.customLogoUrl} />
+                <NexgenLogo variant="crest" size={certData.watermarkSize || 400} customLogoUrl={certData.customLogoUrl} />
               ) : (
-                <Award className="w-[450px] h-[450px]" />
+                <Award style={{ width: `${certData.watermarkSize || 420}px`, height: `${certData.watermarkSize || 420}px` }} />
               )}
             </div>
 
@@ -843,7 +943,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                   <div className="flex justify-center mb-1">
                     <NexgenLogo
                       variant="full"
-                      size={130}
+                      size={certData.logoSize || 130}
                       customLogoUrl={certData.customLogoUrl}
                       className="mx-auto"
                     />
@@ -860,7 +960,10 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
               {/* Certificate Title */}
               <div className="pt-2">
                 <div className={`inline-block border-b-2 ${themeStyles.titleUnderline} pb-1`}>
-                  <span className={`text-sm sm:text-base font-sans font-extrabold uppercase tracking-widest px-6 py-1.5 ${themeStyles.badgeBg} rounded shadow-2xs`}>
+                  <span
+                    style={{ fontSize: `${certData.certTitleSize || 15}px` }}
+                    className={`font-sans font-extrabold uppercase tracking-widest px-6 py-1.5 ${themeStyles.badgeBg} rounded shadow-2xs`}
+                  >
                     {certData.certTitle}
                   </span>
                 </div>
@@ -869,7 +972,10 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
               {/* Body Description */}
               <div className="space-y-3 font-sans max-w-2xl mx-auto text-slate-700">
                 <p className="text-xs italic text-slate-500">{certData.certSubtext}</p>
-                <h2 className="text-2xl sm:text-3xl font-serif font-black text-slate-950 tracking-tight">
+                <h2
+                  style={{ fontSize: `${certData.studentNameSize || 28}px` }}
+                  className="font-serif font-black text-slate-950 tracking-tight"
+                >
                   {certData.studentName}
                 </h2>
                 <p className="text-xs text-slate-500 font-mono">
