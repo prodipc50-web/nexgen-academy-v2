@@ -1,0 +1,21 @@
+{
+  "entities": {
+    "academy_data": {
+      "title": "Academy Main Database State",
+      "description": "Global synced state containing leads, students, batches, courses, payments, expenses, etc.",
+      "fields": {
+        "staffList": { "type": "array", "description": "Staff and user accounts" },
+        "courses": { "type": "array", "description": "Academy course catalogue" },
+        "batches": { "type": "array", "description": "Batch schedules and rooms" },
+        "leads": { "type": "array", "description": "Customer inquiry leads" },
+        "students": { "type": "array", "description": "Student directory" },
+        "admissions": { "type": "array", "description": "Student admissions and fees" },
+        "payments": { "type": "array", "description": "Payment transactions" },
+        "expenses": { "type": "array", "description": "Office expenses" },
+        "seminars": { "type": "array", "description": "Seminars and workshops" },
+        "certificates": { "type": "array", "description": "Issued certificates" },
+        "updatedAt": { "type": "string", "description": "ISO timestamp of last update" }
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Nexgen Computer Academy - Office Management System",
+  "description": "All-in-one ERP, CRM, Student Management, Batch Schedule, Attendance, Payment, Due Collection, Certificate, and Academy Operations System for Nexgen Computer Academy.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
