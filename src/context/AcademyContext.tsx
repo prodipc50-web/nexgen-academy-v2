@@ -144,7 +144,7 @@ interface AcademyContextType {
 
   addFollowUp: (followUp: Omit<FollowUp, 'id' | 'createdAt'>) => void;
 
-  createAdmission: (params: {
+    createAdmission: (params: {
     studentData: Partial<Student>;
     courseId: string;
     batchId: string;
@@ -153,6 +153,8 @@ interface AcademyContextType {
     leadSource: string;
     campaignId?: string;
     referral?: string;
+    learningMode?: 'Offline' | 'Online Live' | 'Hybrid';
+    admissionType?: 'In-Person / Office' | 'Online Admission';
     regularFee: number;
     discount: number;
     scholarship: number;
@@ -1272,6 +1274,8 @@ export const AcademyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     leadSource,
     campaignId,
     referral,
+    learningMode,
+    admissionType,
     regularFee,
     discount,
     scholarship,
@@ -1290,6 +1294,8 @@ export const AcademyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     leadSource: string;
     campaignId?: string;
     referral?: string;
+    learningMode?: 'Offline' | 'Online Live' | 'Hybrid';
+    admissionType?: 'In-Person / Office' | 'Online Admission';
     regularFee: number;
     discount: number;
     scholarship: number;
@@ -1328,6 +1334,7 @@ export const AcademyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         gender: studentData.gender || 'Male',
         occupation: studentData.occupation || 'Student',
         education: studentData.education || 'HSC',
+        bloodGroup: studentData.bloodGroup || 'A+',
         institution: studentData.institution,
         guardianName: studentData.guardianName,
         guardianPhone: studentData.guardianPhone,
@@ -1335,6 +1342,8 @@ export const AcademyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         counselorId,
         counselorName: counselorName || staffList.find(s => s.id === counselorId)?.name,
         studentGoal: studentData.studentGoal || 'Freelancing',
+        learningMode: learningMode || studentData.learningMode || 'Offline',
+        onlinePortalAccess: studentData.onlinePortalAccess ?? (learningMode === 'Online Live' || learningMode === 'Hybrid'),
         status: 'Active',
         notes: studentData.notes,
         documents: [],
@@ -1344,7 +1353,7 @@ export const AcademyProvider: React.FC<{ children: React.ReactNode }> = ({ child
             date: new Date().toISOString().split('T')[0],
             type: 'Admission',
             title: 'Enrolled in Academy',
-            description: `Admitted into batch ${batches.find(b => b.id === batchId)?.batchNumber || ''}`,
+            description: `Admitted into batch ${batches.find(b => b.id === batchId)?.batchNumber || ''} (${learningMode || 'Offline'})`,
             performedBy: currentUser.name
           }
         ],
@@ -1362,6 +1371,8 @@ export const AcademyProvider: React.FC<{ children: React.ReactNode }> = ({ child
       studentId: studentId!,
       courseId,
       batchId,
+      learningMode: learningMode || (batches.find(b => b.id === batchId)?.batchType || 'Offline'),
+      admissionType: admissionType || (learningMode === 'Online Live' ? 'Online Admission' : 'In-Person / Office'),
       admissionDate: new Date().toISOString().split('T')[0],
       counselorId,
       counselorName: counselorName || staffList.find(s => s.id === counselorId)?.name,

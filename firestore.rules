@@ -1,8 +1,29 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // Helper functions for hardened security
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Default deny catch-all
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
+    }
+
+    // Academy Master Synced State & Backups
+    match /academy_data/{docId} {
+      allow read, write: if isValidId(docId);
+    }
+
+    // System Connection Health Check
+    match /test/{testId} {
+      allow read, write: if isValidId(testId);
     }
   }
 }

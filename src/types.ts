@@ -34,6 +34,8 @@ export interface AcademySettings {
   admitCardControllerName?: string; // default 'Exam Controller'
   idCardTerms?: string;
   admitCardInstructions?: string;
+  admissionFormTerms?: string;
+  defaultLearningMode?: 'Offline' | 'Online Live' | 'Hybrid';
   logoIconSize: number; // default 48
   logoFontSize: number; // default 16
   taglineFontSize: number; // default 11
@@ -138,6 +140,7 @@ export interface Lead {
   comments?: string;
   requirements?: string;
   budget?: number;
+  preferredLearningMode?: 'Offline' | 'Online Live' | 'Hybrid';
   status: LeadStatus;
   lostReason?: string;
   nextFollowUpDate?: string;
@@ -195,6 +198,8 @@ export interface Student {
   alumniFreelancingStatus?: string;
   alumniSkills?: string[];
   referralCode?: string;
+  learningMode?: 'Offline' | 'Online Live' | 'Hybrid';
+  onlinePortalAccess?: boolean;
   notes?: string;
   documents?: StudentDocument[];
   timeline?: StudentTimelineEvent[];
@@ -223,6 +228,9 @@ export interface Course {
   description: string;
   thumbnailUrl?: string;
   status: CourseStatus;
+  deliveryMode?: 'Offline' | 'Online Live' | 'Hybrid';
+  livePlatform?: string;
+  recordingAccess?: string;
 
   // Duration
   durationValue?: number;
@@ -274,6 +282,7 @@ export interface Batch {
   id: string;
   batchNumber: string; // e.g. "GD-006"
   courseId: string;
+  batchType?: 'Offline' | 'Online Live' | 'Hybrid';
   trainerId?: string;
   trainerName?: string; // Manual Trainer Name
   startDate: string;
@@ -281,6 +290,10 @@ export interface Batch {
   classDays: string; // e.g. "Sun, Tue, Thu"
   classTime: string; // e.g. "6:00 PM - 8:00 PM"
   room: string;
+  liveMeetingUrl?: string; // e.g. Google Meet or Zoom URL
+  meetingPasscode?: string;
+  recordingDriveUrl?: string; // Recordings archive drive link
+  onlinePlatform?: string; // Zoom / Meet / Teams / Lab
   seatCapacity: number;
   status: BatchStatus;
   notes?: string;
@@ -308,6 +321,8 @@ export interface Admission {
   studentId: string;
   courseId: string;
   batchId: string;
+  learningMode?: 'Offline' | 'Online Live' | 'Hybrid';
+  admissionType?: 'In-Person / Office' | 'Online Admission';
   admissionDate: string;
   counselorId: string;
   counselorName?: string; // Manual Counselor Name
@@ -344,7 +359,7 @@ export interface Payment {
   createdAt: string;
 }
 
-export type AttendanceStatus = 'Present' | 'Absent' | 'Late' | 'Excused';
+export type AttendanceStatus = 'Present' | 'Absent' | 'Late' | 'Excused' | 'Online Present';
 
 export interface AttendanceRecord {
   id: string;

@@ -558,186 +558,212 @@ export const IdCardAdmitCardModal: React.FC<IdCardAdmitCardModalProps> = ({
         )}
 
         {/* Printable View Area */}
-        <div ref={printAreaRef} className="p-6 bg-slate-100 flex flex-col items-center justify-center space-y-6 overflow-y-auto">
+        <div ref={printAreaRef} className="p-4 sm:p-6 bg-slate-100 flex flex-col items-center justify-center overflow-y-auto print:p-0 print:m-0 print:bg-white print-page-a4">
           {activeMode === 'id_card' ? (
-            /* ID CARD (FRONT & BACK PREVIEW) */
-            <div className="space-y-6 w-full max-w-md" id="id-card-printable">
-              {/* FRONT SIDE */}
-              <div className="w-full bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl shadow-xl overflow-hidden border border-indigo-900 relative">
-                {/* Header Pattern */}
-                <div className="bg-indigo-600 px-4 py-2.5 flex items-center justify-between border-b border-indigo-500/30">
-                  <div className="flex items-center space-x-2">
-                    <NexgenLogo variant="crest" size={24} />
-                    <span className="font-extrabold text-xs tracking-wider uppercase text-white">
-                      {cardData.instituteName}
+            /* OFFICIAL ID CARD A4 PRINT SHEET (FRONT & BACK SIDE-BY-SIDE WITH CUTTING GUIDES) */
+            <div className="w-full max-w-2xl bg-white p-4 sm:p-6 rounded-2xl shadow-xl border border-slate-300 print:shadow-none print:border-none print:p-0 print:m-0" id="id-card-printable">
+              {/* Sheet Title for Print */}
+              <div className="hidden print:block text-center border-b border-slate-300 pb-2 mb-4">
+                <h3 className="text-xs font-black uppercase text-indigo-950 tracking-wider">
+                  {cardData.instituteFullName} — Official Student Identity Card Print Sheet
+                </h3>
+                <p className="text-[9px] text-slate-500">
+                  Standard CR-80 Dimensions (86mm × 54mm) • Cut along dashed guidelines & fold/laminate
+                </p>
+              </div>
+
+              {/* ID Card Front and Back Cards Container */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 print:flex-row print:gap-4">
+                {/* FRONT SIDE (CR-80 Format) */}
+                <div className="w-[85.6mm] h-[54mm] bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white rounded-xl shadow-md overflow-hidden border border-indigo-900 relative flex flex-col justify-between shrink-0 print:border-dashed print:border-slate-400">
+                  {/* Top Bar */}
+                  <div className="bg-indigo-600 px-2.5 py-1.5 flex items-center justify-between border-b border-indigo-500/30">
+                    <div className="flex items-center space-x-1.5">
+                      <NexgenLogo variant="crest" size={18} />
+                      <span className="font-black text-[10px] tracking-wider uppercase text-white">
+                        {cardData.instituteName}
+                      </span>
+                    </div>
+                    <span className="text-[8px] font-black uppercase tracking-wider bg-white/20 px-1.5 py-0.5 rounded text-indigo-100">
+                      STUDENT ID
                     </span>
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full text-indigo-100">
-                    STUDENT ID
-                  </span>
-                </div>
 
-                {/* Content */}
-                <div className="p-5 flex items-center space-x-4">
-                  {/* Photo Frame */}
-                  <div className="relative shrink-0">
-                    <img
-                      src={cardData.photoUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}
-                      alt={cardData.name}
-                      referrerPolicy="no-referrer"
-                      className="w-20 h-24 object-cover rounded-xl border-2 border-indigo-400/80 shadow-md bg-slate-800"
-                    />
-                    <div className="absolute -bottom-1.5 -right-1.5 bg-emerald-500 text-white p-0.5 rounded-full ring-2 ring-slate-900">
-                      <ShieldCheck className="w-3.5 h-3.5" />
+                  {/* Body Content */}
+                  <div className="px-2.5 py-1 flex items-center space-x-2.5 flex-1">
+                    {/* Photo */}
+                    <div className="relative shrink-0">
+                      <img
+                        src={cardData.photoUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}
+                        alt={cardData.name}
+                        referrerPolicy="no-referrer"
+                        className="w-14 h-16 object-cover rounded-lg border-2 border-indigo-400 shadow-xs bg-slate-800"
+                      />
+                      <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white p-0.5 rounded-full ring-1 ring-slate-900">
+                        <ShieldCheck className="w-2.5 h-2.5" />
+                      </div>
+                    </div>
+
+                    {/* Meta */}
+                    <div className="space-y-0.5 text-left min-w-0 flex-1">
+                      <h4 className="font-black text-[12px] text-white truncate leading-tight">
+                        {cardData.name}
+                      </h4>
+                      <p className="text-indigo-300 text-[9px] font-bold truncate">
+                        {cardData.courseName}
+                      </p>
+
+                      <div className="pt-0.5 space-y-0.5 text-[8.5px] text-slate-300">
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">ID No:</span>
+                          <span className="font-mono font-black text-indigo-200">{cardData.studentCode}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Batch:</span>
+                          <span className="font-semibold text-white">{cardData.batchNumber}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Blood Group:</span>
+                          <span className="font-black text-rose-400">{cardData.bloodGroup}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Details */}
-                  <div className="space-y-1 text-left min-w-0 flex-1">
-                    <h3 className="font-extrabold text-base text-white truncate leading-tight">
-                      {cardData.name}
-                    </h3>
-                    <p className="text-indigo-300 text-xs font-semibold truncate">
-                      {cardData.courseName}
-                    </p>
-
-                    <div className="pt-1.5 space-y-0.5 text-[11px] text-slate-300">
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Student ID:</span>
-                        <span className="font-mono font-bold text-white">{cardData.studentCode}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Batch:</span>
-                        <span className="font-semibold text-white">{cardData.batchNumber}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Blood Group:</span>
-                        <span className="font-bold text-rose-400">{cardData.bloodGroup}</span>
-                      </div>
-                    </div>
+                  {/* Footer Strip */}
+                  <div className="bg-slate-950/90 px-2.5 py-1 flex items-center justify-between border-t border-indigo-900/50 text-[8px] text-slate-400">
+                    <span>Issued: {cardData.issueDate}</span>
+                    <span className="text-indigo-300 font-mono">{cardData.website}</span>
+                    <span>Valid: {cardData.expireDate}</span>
                   </div>
                 </div>
 
-                {/* Footer Bar */}
-                <div className="bg-slate-950/80 px-4 py-2 flex items-center justify-between border-t border-indigo-900/50 text-[10px] text-slate-400">
-                  <span>Issued: {cardData.issueDate}</span>
-                  <span className="text-indigo-400 font-mono">{cardData.website}</span>
-                  <span>Valid: {cardData.expireDate}</span>
+                {/* BACK SIDE (CR-80 Format) */}
+                <div className="w-[85.6mm] h-[54mm] bg-white text-slate-800 rounded-xl shadow-md p-2.5 border border-slate-300 relative text-left flex flex-col justify-between shrink-0 print:border-dashed print:border-slate-400">
+                  {/* Top Bar */}
+                  <div className="flex items-start justify-between border-b border-slate-200 pb-1">
+                    <div>
+                      <h5 className="font-black text-[9px] uppercase tracking-wider text-indigo-950">
+                        {cardData.instituteFullName}
+                      </h5>
+                      <p className="text-[7.5px] text-slate-600 font-medium">
+                        <strong className="text-indigo-900">{cardData.campusName}</strong> • Helpline: <strong className="text-slate-900 font-mono">{cardData.instituteSupport}</strong>
+                      </p>
+                    </div>
+                    <div className="w-7 h-7 bg-slate-100 p-0.5 rounded border border-slate-300 flex items-center justify-center shrink-0">
+                      <QrCode className="w-6 h-6 text-slate-800" />
+                    </div>
+                  </div>
+
+                  {/* Contacts */}
+                  <div className="space-y-0.5 text-[8px] text-slate-600 my-0.5">
+                    <p><strong className="text-slate-800">Phone:</strong> <span className="font-mono">{cardData.phone}</span> | <strong className="text-slate-800">Emergency:</strong> <span className="font-mono">{cardData.emergencyContact}</span></p>
+                    <p className="truncate"><strong className="text-slate-800">Address:</strong> {cardData.address}</p>
+                  </div>
+
+                  {/* Terms */}
+                  <div className="text-[7px] text-slate-500 bg-slate-50 p-1 rounded border border-slate-100 whitespace-pre-line leading-tight">
+                    {cardData.idCardTerms}
+                  </div>
+
+                  {/* Signatures */}
+                  <div className="flex justify-between items-end pt-0.5 border-t border-slate-200 text-[7.5px]">
+                    <div className="text-center">
+                      <div className="h-3.5 border-b border-slate-400 w-16 mb-0.5"></div>
+                      <span className="text-slate-500 uppercase font-semibold">Student Sign</span>
+                    </div>
+                    <div className="text-center">
+                      <div className="h-3.5 flex items-center justify-center border-b border-indigo-600 w-20 mb-0.5">
+                        <span className="font-serif italic text-[8.5px] font-bold text-indigo-900">{cardData.signatoryName}</span>
+                      </div>
+                      <span className="text-indigo-900 uppercase font-black">{cardData.signatoryTitle}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* BACK SIDE */}
-              <div className="w-full bg-white text-slate-800 rounded-2xl shadow-lg p-5 border border-slate-200 relative text-left">
-                <div className="flex items-start justify-between border-b border-slate-200 pb-3 mb-3">
-                  <div>
-                    <h4 className="font-bold text-xs uppercase tracking-wider text-slate-900">
-                      {cardData.instituteFullName}
-                    </h4>
-                    <p className="text-[10px] text-slate-600 font-medium">
-                      <strong className="text-indigo-950">{cardData.campusName}</strong> • Support: <strong className="text-slate-900">{cardData.instituteSupport}</strong>
-                    </p>
-                  </div>
-                  <div className="w-10 h-10 bg-slate-100 p-1 rounded-lg border border-slate-300 flex items-center justify-center">
-                    <QrCode className="w-8 h-8 text-slate-800" />
-                  </div>
-                </div>
-
-                <div className="space-y-1 text-[11px] text-slate-600 mb-3">
-                  <p><strong className="text-slate-800">Phone:</strong> {cardData.phone}</p>
-                  <p><strong className="text-slate-800">Emergency Contact:</strong> {cardData.emergencyContact}</p>
-                  <p><strong className="text-slate-800">Address:</strong> {cardData.address}</p>
-                </div>
-
-                <div className="text-[9px] text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100 mb-3 whitespace-pre-line leading-relaxed">
-                  {cardData.idCardTerms}
-                </div>
-
-                <div className="flex justify-between items-end pt-1">
-                  <div className="text-center">
-                    <div className="h-6 border-b border-slate-400 w-24 mb-1"></div>
-                    <span className="text-[9px] text-slate-500 uppercase font-semibold">Student Sign</span>
-                  </div>
-                  <div className="text-center">
-                    <div className="h-6 flex items-center justify-center border-b border-indigo-600 w-28 mb-1">
-                      <span className="font-serif italic text-xs font-bold text-indigo-900">{cardData.signatoryName}</span>
-                    </div>
-                    <span className="text-[9px] text-indigo-700 uppercase font-bold">{cardData.signatoryTitle}</span>
-                  </div>
-                </div>
+              {/* Cutting & Lamination Instructions on Print */}
+              <div className="mt-6 pt-3 border-t border-dashed border-slate-300 text-center text-[9px] text-slate-500 print:block">
+                ✂️ Cut along outer boundaries • Sized for Standard PVC ID Card Pouches & Laminators • Helpline: {cardData.instituteSupport}
               </div>
             </div>
           ) : (
-            /* ADMIT CARD PREVIEW */
-            <div className="w-full bg-white rounded-2xl shadow-xl p-6 border border-slate-300 text-slate-900 space-y-4" id="admit-card-printable">
+            /* ADMIT CARD PREVIEW & A4 PRINT */
+            <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-5 sm:p-6 border border-slate-300 text-slate-900 space-y-3.5 print:shadow-none print:border-none print:p-0 print:m-0" id="admit-card-printable">
               {/* Header */}
-              <div className="flex items-center justify-between border-b-2 border-indigo-600 pb-3">
+              <div className="flex items-center justify-between border-b-2 border-indigo-950 pb-2.5">
                 <div className="flex items-center space-x-3">
-                  <NexgenLogo variant="crest" size={44} />
+                  <NexgenLogo variant="crest" size={42} />
                   <div>
-                    <h2 className="text-base font-extrabold uppercase tracking-wide text-slate-900 leading-tight">
+                    <h2 className="text-base font-black uppercase tracking-tight text-indigo-950 leading-tight">
                       {cardData.instituteFullName}
                     </h2>
-                    <p className="text-xs text-slate-600 font-medium">
-                      <strong className="text-indigo-900">{cardData.campusName}</strong> • Support: <strong className="text-slate-900">{cardData.instituteSupport}</strong>
+                    <p className="text-[10px] text-slate-600 font-medium">
+                      <strong className="text-indigo-900">{cardData.campusName}</strong> • Helpline: <strong className="text-slate-900 font-mono">{cardData.instituteSupport}</strong> • <span className="text-indigo-700 font-mono">{cardData.website}</span>
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="inline-block px-3 py-1 bg-indigo-50 border border-indigo-200 text-indigo-900 font-black text-xs rounded-lg uppercase">
-                    ADMIT CARD
+                  <span className="inline-block px-3 py-1 bg-indigo-900 text-white font-black text-xs rounded uppercase tracking-wider shadow-xs">
+                    OFFICIAL ADMIT CARD
                   </span>
-                  <p className="text-[10px] text-slate-400 mt-1 font-mono">{cardData.studentCode}</p>
+                  <p className="text-[10px] text-indigo-950 font-bold mt-1 font-mono">{cardData.studentCode}</p>
                 </div>
               </div>
 
-              {/* Student Details Grid */}
-              <div className="grid grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs">
+              {/* Student & Exam Details Grid */}
+              <div className="grid grid-cols-3 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
                 <div>
                   <span className="text-slate-500 text-[10px] block">Candidate Name:</span>
-                  <span className="font-bold text-slate-900 text-sm">{cardData.name}</span>
+                  <span className="font-bold text-slate-950 text-xs">{cardData.name}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 text-[10px] block">Course:</span>
-                  <span className="font-semibold text-slate-800">{cardData.courseName}</span>
+                  <span className="text-slate-500 text-[10px] block">Enrolled Course:</span>
+                  <span className="font-bold text-slate-800 text-[11px]">{cardData.courseName}</span>
                 </div>
                 <div>
                   <span className="text-slate-500 text-[10px] block">Batch Number:</span>
-                  <span className="font-bold text-indigo-600 font-mono">{cardData.batchNumber}</span>
+                  <span className="font-black text-indigo-900 font-mono">{cardData.batchNumber}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 text-[10px] block">Exam Title:</span>
-                  <span className="font-semibold text-slate-800">{cardData.examTitle}</span>
+                  <span className="text-slate-500 text-[10px] block">Examination Title:</span>
+                  <span className="font-bold text-slate-800 text-[11px]">{cardData.examTitle}</span>
                 </div>
                 <div>
                   <span className="text-slate-500 text-[10px] block">Exam Date & Time:</span>
-                  <span className="font-bold text-slate-900 font-mono">
+                  <span className="font-bold text-slate-950 font-mono text-[11px]">
                     {cardData.examDate} • {cardData.examTime}
                   </span>
                 </div>
                 <div>
                   <span className="text-slate-500 text-[10px] block">Exam Center & Room:</span>
-                  <span className="font-semibold text-slate-800">{cardData.examRoom}</span>
+                  <span className="font-bold text-slate-800 text-[11px]">{cardData.examRoom}</span>
                 </div>
               </div>
 
               {/* Instructions */}
-              <div className="text-[11px] text-slate-600 space-y-1 bg-amber-50/60 p-3 rounded-xl border border-amber-200 whitespace-pre-line">
-                <p className="font-bold text-amber-900">Exam Hall Instructions:</p>
+              <div className="text-[10.5px] text-slate-700 space-y-1 bg-amber-50/70 p-3 rounded-xl border border-amber-200 whitespace-pre-line leading-relaxed">
+                <p className="font-black text-amber-950 uppercase tracking-wider text-[10px]">Examination Hall Instructions & Guidelines:</p>
                 {cardData.examInstructions}
               </div>
 
               {/* Signatures */}
-              <div className="flex justify-between items-end pt-4 border-t border-slate-200">
+              <div className="flex justify-between items-end pt-5 mt-2 border-t border-slate-300">
                 <div className="text-center">
-                  <div className="h-6 border-b border-slate-400 w-28 mb-1"></div>
-                  <span className="text-[10px] text-slate-500 font-semibold uppercase">Candidate Signature</span>
+                  <div className="h-6 border-b border-slate-400 w-32 mb-1"></div>
+                  <span className="text-[10px] text-slate-600 font-bold uppercase">Candidate Signature</span>
                 </div>
                 <div className="text-center">
-                  <div className="h-6 flex items-center justify-center border-b border-indigo-600 w-28 mb-1">
-                    <span className="font-serif italic text-xs font-bold text-indigo-900">{cardData.controllerName}</span>
+                  <div className="h-6 flex items-center justify-center border-b border-indigo-900 w-36 mb-1">
+                    <span className="font-serif italic text-xs font-bold text-indigo-950">{cardData.controllerName}</span>
                   </div>
-                  <span className="text-[10px] text-indigo-700 font-bold uppercase">Controller of Exams</span>
+                  <span className="text-[10px] text-indigo-950 font-black uppercase">Controller of Examinations</span>
                 </div>
+              </div>
+
+              {/* Admit card footer */}
+              <div className="pt-2 border-t border-slate-200 text-center text-[9px] text-slate-400">
+                Nexgen IT Academy Examination Division • Valid for scheduled exam only • Helpline: {cardData.instituteSupport}
               </div>
             </div>
           )}

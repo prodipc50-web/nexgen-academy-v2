@@ -3,6 +3,7 @@ import { useAcademy } from '../../context/AcademyContext';
 import { Student, StudentStatus, OccupationType, StudentGoal } from '../../types';
 import { NexgenLogo } from '../common/NexgenLogo';
 import { IdCardAdmitCardModal } from './IdCardAdmitCardModal';
+import { AdmissionFormModal } from './AdmissionFormModal';
 import {
   X,
   GraduationCap,
@@ -64,6 +65,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isIdCardModalOpen, setIsIdCardModalOpen] = useState(false);
+  const [isAdmissionFormOpen, setIsAdmissionFormOpen] = useState(false);
 
   // Edit fields
   const [editName, setEditName] = useState('');
@@ -167,6 +169,15 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
           </div>
 
           <div className="flex items-center space-x-2 relative z-10">
+            <button
+              type="button"
+              onClick={() => setIsAdmissionFormOpen(true)}
+              className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold border border-white/20 transition-all flex items-center space-x-1.5 backdrop-blur-xs"
+              title="Print A4 Admission Form"
+            >
+              <FileText className="w-3.5 h-3.5 text-emerald-300" />
+              <span>Admission Form</span>
+            </button>
             <button
               type="button"
               onClick={() => setIsIdCardModalOpen(true)}
@@ -711,6 +722,16 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
         isOpen={isIdCardModalOpen}
         onClose={() => setIsIdCardModalOpen(false)}
         student={student}
+        course={course}
+        batch={batch}
+      />
+
+      {/* A4 Admission Form Modal */}
+      <AdmissionFormModal
+        isOpen={isAdmissionFormOpen}
+        onClose={() => setIsAdmissionFormOpen(false)}
+        student={student}
+        admission={admission}
         course={course}
         batch={batch}
       />

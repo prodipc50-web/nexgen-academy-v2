@@ -65,6 +65,10 @@ export const NewAdmissionModal: React.FC<NewAdmissionModalProps> = ({
   const [selectedBatchId, setSelectedBatchId] = useState<string>(
     initialLead?.interestedBatchId || batches[0]?.id || ''
   );
+  const [learningMode, setLearningMode] = useState<'Offline' | 'Online Live' | 'Hybrid'>(
+    (initialLead?.preferredLearningMode as any) || 'Offline'
+  );
+  const [admissionType, setAdmissionType] = useState<'In-Person / Office' | 'Online Admission'>('In-Person / Office');
   const [counselorId, setCounselorId] = useState<string>(
     initialLead?.counselorId || staffList.find(s => s.role === 'COUNSELOR')?.id || staffList[0]?.id || ''
   );
@@ -92,8 +96,19 @@ export const NewAdmissionModal: React.FC<NewAdmissionModalProps> = ({
       const calculatedDiscount = Math.max(0, course.regularFee - course.offerFee);
       setDiscount(calculatedDiscount);
       setInitialPaid(Math.round(course.offerFee / 2)); // Default half payment suggestion
+      if (course.deliveryMode) {
+        setLearningMode(course.deliveryMode);
+      }
     }
   }, [selectedCourseId, courses]);
+
+  // Sync when batch changes
+  useEffect(() => {
+    const batch = batches.find(b => b.id === selectedBatchId);
+    if (batch?.batchType) {
+      setLearningMode(batch.batchType);
+    }
+  }, [selectedBatchId, batches]);
 
   // Sync when initialLead changes
   useEffect(() => {
@@ -109,6 +124,7 @@ export const NewAdmissionModal: React.FC<NewAdmissionModalProps> = ({
       setInstitution(initialLead.institution || '');
       if (initialLead.interestedCourseId) setSelectedCourseId(initialLead.interestedCourseId);
       if (initialLead.interestedBatchId) setSelectedBatchId(initialLead.interestedBatchId);
+      if (initialLead.preferredLearningMode) setLearningMode(initialLead.preferredLearningMode);
       if (initialLead.counselorId) setCounselorId(initialLead.counselorId);
       if (initialLead.counselorName) setCounselorName(initialLead.counselorName);
       if (initialLead.leadSource) setLeadSource(initialLead.leadSource);
@@ -130,6 +146,7 @@ export const NewAdmissionModal: React.FC<NewAdmissionModalProps> = ({
       setInstitution(lead.institution || '');
       if (lead.interestedCourseId) setSelectedCourseId(lead.interestedCourseId);
       if (lead.interestedBatchId) setSelectedBatchId(lead.interestedBatchId);
+      if (lead.preferredLearningMode) setLearningMode(lead.preferredLearningMode);
       if (lead.counselorId) setCounselorId(lead.counselorId);
       if (lead.leadSource) setLeadSource(lead.leadSource);
     }
@@ -161,10 +178,12 @@ export const NewAdmissionModal: React.FC<NewAdmissionModalProps> = ({
           address,
           occupation,
           education,
+          bloodGroup,
           institution,
           guardianName,
           guardianPhone,
           studentGoal,
+          learningMode,
           notes
         },
         courseId: selectedCourseId,
@@ -174,6 +193,8 @@ export const NewAdmissionModal: React.FC<NewAdmissionModalProps> = ({
         leadSource,
         campaignId: campaignId || undefined,
         referral: referral || undefined,
+        learningMode,
+        admissionType,
         regularFee,
         discount,
         scholarship,
@@ -301,6 +322,19 @@ export const NewAdmissionModal: React.FC<NewAdmissionModalProps> = ({
               </div>
 
               <div>
+                <label className="block text-slate-600 font-semibold mb-1">Blood Group</label>
+                <select
+                  value={bloodGroup}
+                  onChange={e => setBloodGroup(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-900 font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                >
+                  {bloodGroupsList.map(bg => (
+                    <option key={bg} value={bg}>{bg}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
                 <label className="block text-slate-600 font-semibold mb-1">Occupation</label>
                 <select
                   value={occupation}
@@ -402,10 +436,56 @@ export const NewAdmissionModal: React.FC<NewAdmissionModalProps> = ({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 mt-3">
+              {/* Learning Delivery Mode (Offline / Online Live / Hybrid) */}
+              <div className="sm:col-span-2 md:col-span-3 bg-indigo-50/50 p-3 rounded-xl border border-indigo-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
+                <div>
+                  <span className="font-bold text-slate-800 text-xs flex items-center space-x-1.5">
+                    <span>Learning Delivery Mode (ক্লাসের মাধ্যম):</span>
+                  </span>
+                  <p className="text-[11px] text-slate-500">
+                    Choose whether this student will attend physical lab classes or online live sessions
+                  </p>
+                </div>
+
+                <div className="flex items-center space-x-1.5 bg-white p-1 rounded-xl border border-indigo-200">
+                  <button
+                    type="button"
+                    onClick={() => setLearningMode('Offline')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      learningMode === 'Offline'
+                        ? 'bg-slate-900 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
+                  >
+                    🏢 Offline (Campus Lab)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLearningMode('Online Live')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      learningMode === 'Online Live'
+                        ? 'bg-indigo-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
+                  >
+                    🌐 Online Live Class
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLearningMode('Hybrid')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      learningMode === 'Hybrid'
+                        ? 'bg-purple-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
+                  >
+                    🔄 Hybrid (Both)
+                  </button>
+                </div>
+              </div>
+
               <div>
-                <label className="block text-slate-600 font-semibold mb-1">
-                  Enrolling Course <span className="text-rose-500">*</span>
-                </label>
+                <label className="block text-slate-600 font-semibold mb-1">Enrolling Course <span className="text-rose-500">*</span></label>
                 <select
                   required
                   value={selectedCourseId}

@@ -919,7 +919,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
         <div className="overflow-y-auto flex-1 p-2 sm:p-6 bg-slate-100/70">
           {/* Certificate Canvas */}
           <div
-            className={`p-6 sm:p-12 ${themeStyles.bg} text-slate-900 font-serif border-[10px] sm:border-[14px] border-double ${themeStyles.border} rounded-xl relative overflow-hidden bg-white shadow-md print:shadow-none print:m-0 print:border-8 print:p-8 transition-colors duration-200`}
+            className={`p-6 sm:p-12 ${themeStyles.bg} text-slate-900 font-serif border-[10px] sm:border-[14px] border-double ${themeStyles.border} rounded-xl relative overflow-hidden bg-white shadow-md print:shadow-none print:m-0 print:border-8 print:p-8 transition-colors duration-200 print-landscape-page print-page-a4-landscape`}
             id="certificate-printable"
           >
             {/* Subtle Background Watermark */}

@@ -15,7 +15,14 @@ import {
   Trash2,
   AlertTriangle,
   FileSpreadsheet,
-  Download
+  Download,
+  Video,
+  ExternalLink,
+  Globe,
+  Building2,
+  PlayCircle,
+  Key,
+  Layers
 } from 'lucide-react';
 
 interface BatchesViewProps {
@@ -35,15 +42,22 @@ export const BatchesView: React.FC<BatchesViewProps> = ({ onSelectStudent }) => 
     deleteBatch
   } = useAcademy();
 
+  const [filterMode, setFilterMode] = useState<'All' | 'Offline' | 'Online Live' | 'Hybrid'>('All');
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedCourseId, setSelectedCourseId] = useState(courses[0]?.id || '');
   const [batchNumber, setBatchNumber] = useState(`NCA-B${batches.length + 1}`);
   const [trainerId, setTrainerId] = useState(staffList.find(s => s.role === 'TRAINER')?.id || staffList[0]?.id || '');
   const [trainerName, setTrainerName] = useState('');
+  const [batchType, setBatchType] = useState<'Offline' | 'Online Live' | 'Hybrid'>('Offline');
+  const [liveMeetingUrl, setLiveMeetingUrl] = useState('');
+  const [meetingPasscode, setMeetingPasscode] = useState('');
+  const [recordingDriveUrl, setRecordingDriveUrl] = useState('');
+  const [onlinePlatform, setOnlinePlatform] = useState<'Google Meet' | 'Zoom' | 'Microsoft Teams' | 'Classroom'>('Google Meet');
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [classDays, setClassDays] = useState('Sun, Tue, Thu');
   const [classTime, setClassTime] = useState('06:00 PM - 08:00 PM');
-  const [room, setRoom] = useState(rooms[0]?.name || 'Lab-1');
+  const [room, setRoom] = useState(rooms[0]?.name || 'Lab-1 (Farmgate)');
   const [seatCapacity, setSeatCapacity] = useState(20);
   const [status, setStatus] = useState<BatchStatus>('Ongoing');
 
@@ -53,6 +67,11 @@ export const BatchesView: React.FC<BatchesViewProps> = ({ onSelectStudent }) => 
   const [editBatchNumber, setEditBatchNumber] = useState('');
   const [editTrainerId, setEditTrainerId] = useState('');
   const [editTrainerName, setEditTrainerName] = useState('');
+  const [editBatchType, setEditBatchType] = useState<'Offline' | 'Online Live' | 'Hybrid'>('Offline');
+  const [editLiveMeetingUrl, setEditLiveMeetingUrl] = useState('');
+  const [editMeetingPasscode, setEditMeetingPasscode] = useState('');
+  const [editRecordingDriveUrl, setEditRecordingDriveUrl] = useState('');
+  const [editOnlinePlatform, setEditOnlinePlatform] = useState<'Google Meet' | 'Zoom' | 'Microsoft Teams' | 'Classroom'>('Google Meet');
   const [editStartDate, setEditStartDate] = useState('');
   const [editEndDate, setEditEndDate] = useState('');
   const [editClassDays, setEditClassDays] = useState('');
@@ -73,15 +92,23 @@ export const BatchesView: React.FC<BatchesViewProps> = ({ onSelectStudent }) => 
       batchNumber,
       trainerId,
       trainerName: trainerName.trim() || staffList.find(s => s.id === trainerId)?.name || undefined,
+      batchType,
+      liveMeetingUrl: liveMeetingUrl.trim() || undefined,
+      meetingPasscode: meetingPasscode.trim() || undefined,
+      recordingDriveUrl: recordingDriveUrl.trim() || undefined,
+      onlinePlatform: batchType !== 'Offline' ? onlinePlatform : undefined,
       startDate,
       classDays,
       classTime,
-      room,
+      room: batchType === 'Online Live' ? (onlinePlatform || 'Online Google Meet') : room,
       seatCapacity,
       status
     });
     setIsAddModalOpen(false);
     setTrainerName('');
+    setLiveMeetingUrl('');
+    setMeetingPasscode('');
+    setRecordingDriveUrl('');
   };
 
   const openEditModal = (b: Batch) => {
@@ -90,6 +117,11 @@ export const BatchesView: React.FC<BatchesViewProps> = ({ onSelectStudent }) => 
     setEditBatchNumber(b.batchNumber);
     setEditTrainerId(b.trainerId || '');
     setEditTrainerName(b.trainerName || (staffList.find(s => s.id === b.trainerId)?.name || ''));
+    setEditBatchType(b.batchType || 'Offline');
+    setEditLiveMeetingUrl(b.liveMeetingUrl || '');
+    setEditMeetingPasscode(b.meetingPasscode || '');
+    setEditRecordingDriveUrl(b.recordingDriveUrl || '');
+    setEditOnlinePlatform((b.onlinePlatform as any) || 'Google Meet');
     setEditStartDate(b.startDate);
     setEditEndDate(b.endDate || '');
     setEditClassDays(b.classDays);
@@ -108,11 +140,16 @@ export const BatchesView: React.FC<BatchesViewProps> = ({ onSelectStudent }) => 
       batchNumber: editBatchNumber.trim(),
       trainerId: editTrainerId,
       trainerName: editTrainerName.trim() || undefined,
+      batchType: editBatchType,
+      liveMeetingUrl: editLiveMeetingUrl.trim() || undefined,
+      meetingPasscode: editMeetingPasscode.trim() || undefined,
+      recordingDriveUrl: editRecordingDriveUrl.trim() || undefined,
+      onlinePlatform: editBatchType !== 'Offline' ? editOnlinePlatform : undefined,
       startDate: editStartDate,
       endDate: editEndDate || undefined,
       classDays: editClassDays,
       classTime: editClassTime,
-      room: editRoom,
+      room: editBatchType === 'Online Live' ? (editOnlinePlatform || 'Online Google Meet') : editRoom,
       seatCapacity: editSeatCapacity,
       status: editStatus
     });
@@ -125,6 +162,11 @@ export const BatchesView: React.FC<BatchesViewProps> = ({ onSelectStudent }) => 
     deleteBatch(deletingBatch.id);
     setDeletingBatch(null);
   };
+
+  const displayedBatches = batches.filter(b => {
+    if (filterMode === 'All') return true;
+    return (b.batchType || 'Offline') === filterMode;
+  });
 
   return (
     <div className="space-y-6 animate-in fade-in duration-150">
@@ -167,14 +209,43 @@ export const BatchesView: React.FC<BatchesViewProps> = ({ onSelectStudent }) => 
         </div>
       </div>
 
+      {/* Filter Tabs and Stats */}
+      <div className="flex items-center space-x-2 border-b border-slate-200 pb-3 overflow-x-auto">
+        {(['All', 'Offline', 'Online Live', 'Hybrid'] as const).map(mode => {
+          const count = mode === 'All' ? batches.length : batches.filter(b => (b.batchType || 'Offline') === mode).length;
+          return (
+            <button
+              key={mode}
+              onClick={() => setFilterMode(mode)}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 shrink-0 ${
+                filterMode === mode
+                  ? 'bg-purple-600 text-white shadow-xs'
+                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              }`}
+            >
+              {mode === 'Offline' && <Building2 className="w-3.5 h-3.5" />}
+              {mode === 'Online Live' && <Globe className="w-3.5 h-3.5 text-blue-300" />}
+              {mode === 'Hybrid' && <Layers className="w-3.5 h-3.5 text-amber-300" />}
+              <span>{mode === 'All' ? 'All Batches' : `${mode} Batches`}</span>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                filterMode === mode ? 'bg-purple-700 text-purple-100' : 'bg-slate-100 text-slate-600'
+              }`}>
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Batches Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {batches.map(batch => {
+        {displayedBatches.map(batch => {
           const course = courses.find(c => c.id === batch.courseId);
           const trainer = staffList.find(s => s.id === batch.trainerId);
           const trainerDisplayName = batch.trainerName || trainer?.name || 'Unassigned';
           const enrolledStudents = admissions.filter(a => a.batchId === batch.id);
           const fillRate = Math.min(100, Math.round((enrolledStudents.length / batch.seatCapacity) * 100));
+          const currentBatchType = batch.batchType || 'Offline';
 
           return (
             <div
@@ -185,6 +256,30 @@ export const BatchesView: React.FC<BatchesViewProps> = ({ onSelectStudent }) => 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <span className="font-bold text-sm text-slate-900">Batch #{batch.batchNumber}</span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center space-x-1 ${
+                      currentBatchType === 'Online Live'
+                        ? 'bg-blue-100 text-blue-800'
+                        : currentBatchType === 'Hybrid'
+                        ? 'bg-amber-100 text-amber-900'
+                        : 'bg-slate-100 text-slate-700'
+                    }`}>
+                      {currentBatchType === 'Online Live' ? (
+                        <>
+                          <Globe className="w-2.5 h-2.5 text-blue-600" />
+                          <span>Online Live</span>
+                        </>
+                      ) : currentBatchType === 'Hybrid' ? (
+                        <>
+                          <Layers className="w-2.5 h-2.5 text-amber-600" />
+                          <span>Hybrid</span>
+                        </>
+                      ) : (
+                        <>
+                          <Building2 className="w-2.5 h-2.5 text-slate-500" />
+                          <span>Offline</span>
+                        </>
+                      )}
+                    </span>
                   </div>
                   <div className="flex items-center space-x-1.5">
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
@@ -217,18 +312,54 @@ export const BatchesView: React.FC<BatchesViewProps> = ({ onSelectStudent }) => 
                   </div>
                 </div>
 
-                {/* Timing and Room */}
-                <div className="bg-slate-50 p-2.5 rounded-xl text-[11px] text-slate-600 space-y-1">
+                {/* Timing and Room / Live Meeting */}
+                <div className="bg-slate-50 p-2.5 rounded-xl text-[11px] text-slate-600 space-y-1.5">
                   <div className="flex items-center space-x-2">
                     <Clock className="w-3.5 h-3.5 text-purple-600" />
                     <span className="font-semibold">{batch.classDays}</span>
                     <span>•</span>
                     <span>{batch.classTime}</span>
                   </div>
-                  <div className="flex items-center space-x-2 text-slate-500">
-                    <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{batch.room}</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-1.5 text-slate-600">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                      <span className="font-medium">{batch.room}</span>
+                    </div>
                   </div>
+
+                  {/* Online Live Links if available */}
+                  {(batch.liveMeetingUrl || batch.recordingDriveUrl) && (
+                    <div className="pt-1 border-t border-slate-200/60 flex items-center gap-2 flex-wrap">
+                      {batch.liveMeetingUrl && (
+                        <a
+                          href={batch.liveMeetingUrl.startsWith('http') ? batch.liveMeetingUrl : `https://${batch.liveMeetingUrl}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center space-x-1 px-2 py-0.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-[10px] font-bold shadow-2xs"
+                        >
+                          <Video className="w-2.5 h-2.5" />
+                          <span>Join Live Class</span>
+                          <ExternalLink className="w-2.5 h-2.5 opacity-70" />
+                        </a>
+                      )}
+                      {batch.recordingDriveUrl && (
+                        <a
+                          href={batch.recordingDriveUrl.startsWith('http') ? batch.recordingDriveUrl : `https://${batch.recordingDriveUrl}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center space-x-1 px-2 py-0.5 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded text-[10px] font-bold"
+                        >
+                          <PlayCircle className="w-2.5 h-2.5 text-purple-600" />
+                          <span>Recordings Archive</span>
+                        </a>
+                      )}
+                      {batch.meetingPasscode && (
+                        <span className="text-[10px] text-slate-500 font-mono bg-white px-1.5 py-0.5 rounded border border-slate-200">
+                          Pass: {batch.meetingPasscode}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Seat Capacity Progress */}
@@ -419,6 +550,73 @@ export const BatchesView: React.FC<BatchesViewProps> = ({ onSelectStudent }) => 
                 </div>
               </div>
 
+              {/* Delivery Mode & Platform */}
+              <div className="grid grid-cols-2 gap-3 bg-purple-50/50 p-2.5 rounded-xl border border-purple-100">
+                <div>
+                  <label className="block text-purple-900 font-bold mb-1">Batch Mode</label>
+                  <select
+                    value={editBatchType}
+                    onChange={e => setEditBatchType(e.target.value as any)}
+                    className="w-full bg-white border border-purple-200 rounded-lg px-3 py-2 text-purple-950 font-bold outline-none"
+                  >
+                    <option value="Offline">🏢 Offline (Lab Campus)</option>
+                    <option value="Online Live">🌐 Online Live (Meet / Zoom)</option>
+                    <option value="Hybrid">🔄 Hybrid (Campus + Online)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-purple-900 font-bold mb-1">Online Platform</label>
+                  <select
+                    value={editOnlinePlatform}
+                    onChange={e => setEditOnlinePlatform(e.target.value as any)}
+                    disabled={editBatchType === 'Offline'}
+                    className="w-full bg-white border border-purple-200 disabled:opacity-50 rounded-lg px-3 py-2 text-purple-950 font-bold outline-none"
+                  >
+                    <option value="Google Meet">Google Meet</option>
+                    <option value="Zoom">Zoom Meeting</option>
+                    <option value="Microsoft Teams">Microsoft Teams</option>
+                    <option value="Classroom">Google Classroom</option>
+                  </select>
+                </div>
+              </div>
+
+              {editBatchType !== 'Offline' && (
+                <div className="space-y-2 bg-blue-50/60 p-2.5 rounded-xl border border-blue-100">
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="col-span-2">
+                      <label className="block text-blue-900 font-semibold mb-1">Live Class Link (Google Meet / Zoom URL)</label>
+                      <input
+                        type="url"
+                        placeholder="https://meet.google.com/abc-defg-hij"
+                        value={editLiveMeetingUrl}
+                        onChange={e => setEditLiveMeetingUrl(e.target.value)}
+                        className="w-full bg-white border border-blue-200 rounded-lg px-3 py-1.5 text-slate-900 outline-none font-mono text-[11px]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-blue-900 font-semibold mb-1">Passcode</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 123456"
+                        value={editMeetingPasscode}
+                        onChange={e => setEditMeetingPasscode(e.target.value)}
+                        className="w-full bg-white border border-blue-200 rounded-lg px-3 py-1.5 text-slate-900 outline-none text-[11px]"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-blue-900 font-semibold mb-1">Class Recordings Google Drive / Portal Link</label>
+                    <input
+                      type="url"
+                      placeholder="https://drive.google.com/drive/folders/..."
+                      value={editRecordingDriveUrl}
+                      onChange={e => setEditRecordingDriveUrl(e.target.value)}
+                      className="w-full bg-white border border-blue-200 rounded-lg px-3 py-1.5 text-slate-900 outline-none font-mono text-[11px]"
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-slate-600 font-semibold mb-1">Start Date</label>
@@ -463,7 +661,9 @@ export const BatchesView: React.FC<BatchesViewProps> = ({ onSelectStudent }) => 
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-600 font-semibold mb-1">Room / Lab</label>
+                  <label className="block text-slate-600 font-semibold mb-1">
+                    {editBatchType === 'Online Live' ? 'Online Server / Room' : 'Room / Lab'}
+                  </label>
                   <input
                     type="text"
                     value={editRoom}
@@ -592,9 +792,90 @@ export const BatchesView: React.FC<BatchesViewProps> = ({ onSelectStudent }) => 
                 </div>
               </div>
 
+              {/* Delivery Mode & Platform */}
+              <div className="grid grid-cols-2 gap-3 bg-purple-50/50 p-2.5 rounded-xl border border-purple-100">
+                <div>
+                  <label className="block text-purple-900 font-bold mb-1">Batch Mode</label>
+                  <select
+                    value={batchType}
+                    onChange={e => {
+                      const newType = e.target.value as any;
+                      setBatchType(newType);
+                      if (newType === 'Online Live' && (!room || room === 'Lab 01 (Campus)')) {
+                        setRoom('Google Meet');
+                      } else if (newType === 'Offline' && (room === 'Google Meet' || room === 'Zoom')) {
+                        setRoom('Lab 01 (Campus)');
+                      }
+                    }}
+                    className="w-full bg-white border border-purple-200 rounded-lg px-3 py-2 text-purple-950 font-bold outline-none"
+                  >
+                    <option value="Offline">🏢 Offline (Lab Campus)</option>
+                    <option value="Online Live">🌐 Online Live (Meet / Zoom)</option>
+                    <option value="Hybrid">🔄 Hybrid (Campus + Online)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-purple-900 font-bold mb-1">Online Platform</label>
+                  <select
+                    value={onlinePlatform}
+                    onChange={e => {
+                      const val = e.target.value as any;
+                      setOnlinePlatform(val);
+                      if (batchType === 'Online Live') setRoom(val);
+                    }}
+                    disabled={batchType === 'Offline'}
+                    className="w-full bg-white border border-purple-200 disabled:opacity-50 rounded-lg px-3 py-2 text-purple-950 font-bold outline-none"
+                  >
+                    <option value="Google Meet">Google Meet</option>
+                    <option value="Zoom">Zoom Meeting</option>
+                    <option value="Microsoft Teams">Microsoft Teams</option>
+                    <option value="Classroom">Google Classroom</option>
+                  </select>
+                </div>
+              </div>
+
+              {batchType !== 'Offline' && (
+                <div className="space-y-2 bg-blue-50/60 p-2.5 rounded-xl border border-blue-100">
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="col-span-2">
+                      <label className="block text-blue-900 font-semibold mb-1">Live Class Link (Meet / Zoom URL)</label>
+                      <input
+                        type="url"
+                        placeholder="https://meet.google.com/abc-defg-hij"
+                        value={liveMeetingUrl}
+                        onChange={e => setLiveMeetingUrl(e.target.value)}
+                        className="w-full bg-white border border-blue-200 rounded-lg px-3 py-1.5 text-slate-900 outline-none font-mono text-[11px]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-blue-900 font-semibold mb-1">Passcode</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 123456"
+                        value={meetingPasscode}
+                        onChange={e => setMeetingPasscode(e.target.value)}
+                        className="w-full bg-white border border-blue-200 rounded-lg px-3 py-1.5 text-slate-900 outline-none text-[11px]"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-blue-900 font-semibold mb-1">Class Recordings Google Drive / Portal Link</label>
+                    <input
+                      type="url"
+                      placeholder="https://drive.google.com/drive/folders/..."
+                      value={recordingDriveUrl}
+                      onChange={e => setRecordingDriveUrl(e.target.value)}
+                      className="w-full bg-white border border-blue-200 rounded-lg px-3 py-1.5 text-slate-900 outline-none font-mono text-[11px]"
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-600 font-semibold mb-1">Room / Lab</label>
+                  <label className="block text-slate-600 font-semibold mb-1">
+                    {batchType === 'Online Live' ? 'Online Server / Room' : 'Room / Lab'}
+                  </label>
                   <input
                     type="text"
                     value={room}

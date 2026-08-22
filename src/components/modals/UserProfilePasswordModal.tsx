@@ -39,7 +39,7 @@ export const UserProfilePasswordModal: React.FC<UserProfilePasswordModalProps> =
   // Profile fields state
   const [profileName, setProfileName] = useState(currentUser.name || '');
   const [profileEmail, setProfileEmail] = useState(currentUser.email || '');
-  const [profilePhone, setProfilePhone] = useState(currentUser.phone || '+880 1711-223344');
+  const [profilePhone, setProfilePhone] = useState(currentUser.phone || '01798444444');
   const [profileAvatar, setProfileAvatar] = useState(currentUser.avatar || '');
 
   // Password fields state
@@ -57,7 +57,7 @@ export const UserProfilePasswordModal: React.FC<UserProfilePasswordModalProps> =
     if (isOpen) {
       setProfileName(currentUser.name || '');
       setProfileEmail(currentUser.email || '');
-      setProfilePhone(currentUser.phone || '+880 1711-223344');
+      setProfilePhone(currentUser.phone || '01798444444');
       setProfileAvatar(currentUser.avatar || '');
       setActiveTab(defaultTab);
       setErrorMsg('');

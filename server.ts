@@ -6,7 +6,44 @@ import { GoogleGenAI, Modality } from "@google/genai";
 const app = express();
 const PORT = 3000;
 
-app.use(express.json({ limit: "10mb" }));
+// Security & Header hardening middleware
+app.use((_req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  next();
+});
+
+app.use(express.json({ limit: "5mb" }));
+
+// In-memory lightweight rate limiter to prevent API abuse
+const requestCounts = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const MAX_REQUESTS_PER_MINUTE = 60;
+
+function rateLimiter(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const ip = (req.headers["x-forwarded-for"] as string) || req.socket.remoteAddress || "global";
+  const now = Date.now();
+  const clientData = requestCounts.get(ip);
+
+  if (!clientData || now > clientData.resetTime) {
+    requestCounts.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    return next();
+  }
+
+  if (clientData.count >= MAX_REQUESTS_PER_MINUTE) {
+    return res.status(429).json({ error: "Too many requests. Please slow down." });
+  }
+
+  clientData.count++;
+  next();
+}
+
+function sanitizeString(str: unknown, maxLen = 4000): string {
+  if (typeof str !== "string") return "";
+  return str.slice(0, maxLen).replace(/[\0\x08]/g, "").trim();
+}
 
 function getGenAI() {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -29,10 +66,13 @@ app.get("/api/health", (_req, res) => {
 });
 
 // Gemini TTS Endpoint using gemini-3.1-flash-tts-preview
-app.post("/api/tts", async (req, res) => {
+app.post("/api/tts", rateLimiter, async (req, res) => {
   try {
-    const { text, voiceName = "Kore", stylePrompt = "" } = req.body;
-    if (!text || typeof text !== "string") {
+    const text = sanitizeString(req.body.text, 2000);
+    const voiceName = sanitizeString(req.body.voiceName, 50) || "Kore";
+    const stylePrompt = sanitizeString(req.body.stylePrompt, 500);
+
+    if (!text) {
       return res.status(400).json({ error: "Text string is required" });
     }
 
@@ -70,9 +110,13 @@ app.post("/api/tts", async (req, res) => {
 });
 
 // AI Assistant for Nexgen Computer Academy Operations
-app.post("/api/ai-assistant", async (req, res) => {
+app.post("/api/ai-assistant", rateLimiter, async (req, res) => {
   try {
-    const { query, academyContext, userRole } = req.body;
+    const rawQuery = req.body.query;
+    const query = sanitizeString(rawQuery, 4000);
+    const academyContext = req.body.academyContext;
+    const userRole = sanitizeString(req.body.userRole, 50) || "Admin";
+
     if (!query) {
       return res.status(400).json({ error: "Query is required" });
     }
@@ -83,7 +127,7 @@ Your goal is to provide accurate, insightful, executive-level summaries, statist
 
 Rules:
 1. Always base your calculations and answers on the provided JSON data context.
-2. User Role is: "${userRole || 'Admin'}". If a counselor or trainer asks for financial data they aren't authorized for, gently remind them of permissions.
+2. User Role is: "${userRole}". If a counselor or trainer asks for financial data they aren't authorized for, gently remind them of permissions.
 3. Be professional, concise, and structured (use markdown bullets, bold key metrics, and actionable recommendations).
 4. Currency is BDT (৳) or Taka.
 5. Highlight actionable priorities (e.g., overdue payments, hot leads requiring follow-up, low attendance batches).
@@ -108,10 +152,14 @@ ${JSON.stringify(academyContext || {}, null, 2)}
   }
 });
 
-// AI Image/SVG Vector Generator Endpoint
-app.post("/api/generate-vector", async (req, res) => {
+// AI Image/SVG Vector Generator Endpoint with XSS sanitization
+app.post("/api/generate-vector", rateLimiter, async (req, res) => {
   try {
-    const { prompt } = req.body;
+    const prompt = sanitizeString(req.body.prompt, 1000);
+    if (!prompt) {
+      return res.status(400).json({ error: "Prompt is required" });
+    }
+
     const ai = getGenAI();
     const response = await ai.models.generateContent({
       model: "gemini-3.6-flash",
@@ -119,7 +167,15 @@ app.post("/api/generate-vector", async (req, res) => {
     });
 
     let svgText = response.text || "";
-    svgText = svgText.replace(/```xml/gi, "").replace(/```svg/gi, "").replace(/```/g, "").trim();
+    svgText = svgText
+      .replace(/```xml/gi, "")
+      .replace(/```svg/gi, "")
+      .replace(/```/g, "")
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+      .replace(/on\w+="[^"]*"/gi, "")
+      .replace(/on\w+='[^']*'/gi, "")
+      .replace(/javascript:/gi, "")
+      .trim();
 
     res.json({ svg: svgText });
   } catch (err: any) {
